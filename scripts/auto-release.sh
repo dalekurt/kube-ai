@@ -13,6 +13,20 @@ VERSION=$1
 TAG="v$VERSION"
 EXTRACT_NOTES=${2:-""}
 
+# Validate semantic versioning format
+if ! [[ $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[a-zA-Z0-9\.]+)?(\+[a-zA-Z0-9\.]+)?$ ]]; then
+  echo "Error: Version '$VERSION' does not follow semantic versioning format (MAJOR.MINOR.PATCH)"
+  echo "See https://semver.org/ for more information"
+  exit 1
+fi
+
+# Check if the version exists in CHANGELOG.md
+if ! grep -q "## \[$VERSION\]" CHANGELOG.md; then
+  echo "Error: Version $VERSION not found in CHANGELOG.md"
+  echo "Please update CHANGELOG.md with the release notes for version $VERSION before proceeding"
+  exit 1
+fi
+
 # Function to extract release notes from CHANGELOG.md
 extract_changelog() {
   awk -v ver="$VERSION" '
