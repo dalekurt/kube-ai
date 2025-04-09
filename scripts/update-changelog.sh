@@ -122,25 +122,55 @@ update_changelog() {
   
   # Get the commits and categorize them
   local commits=$(get_commits_since_last_version)
-  local categorized=$(categorize_commits "$commits")
+  local categorized_content=$(categorize_commits "$commits")
   
   # Create the new version section
   local new_section="## [$version] - $TODAY
 
-$categorized"
+$categorized_content"
   
-  # Insert the new section after the Unreleased section
-  awk -v new="$new_section" '
-    /^## \[Unreleased\]/ {
-      print $0
-      print ""
-      print new
-      next
-    }
-    { print $0 }
-  ' "$CHANGELOG_FILE" > "$CHANGELOG_FILE.new"
+  # Create a temporary file for the new changelog
+  local temp_file=$(mktemp)
   
-  mv "$CHANGELOG_FILE.new" "$CHANGELOG_FILE"
+  # Process the changelog line by line
+  local unreleased_found=0
+  while IFS= read -r line; do
+    echo "$line" >> "$temp_file"
+    
+    # Insert new section after the Unreleased section
+    if [[ "$unreleased_found" -eq 0 && "$line" == "## [Unreleased]" ]]; then
+      unreleased_found=1
+      echo "" >> "$temp_file"
+      echo "$new_section" >> "$temp_file"
+    fi
+  done < "$CHANGELOG_FILE"
+  
+  # If no Unreleased section found, add it at the top
+  if [ "$unreleased_found" -eq 0 ]; then
+    echo "Warning: No '## [Unreleased]' section found. Adding new version at the top."
+    
+    # Create a new changelog with Unreleased section
+    local new_temp_file=$(mktemp)
+    
+    # Add header
+    head -n 7 "$CHANGELOG_FILE" > "$new_temp_file"
+    
+    # Add Unreleased and new version
+    echo "" >> "$new_temp_file"
+    echo "## [Unreleased]" >> "$new_temp_file"
+    echo "" >> "$new_temp_file"
+    echo "$new_section" >> "$new_temp_file"
+    echo "" >> "$new_temp_file"
+    
+    # Add the rest of the file starting from line 8
+    tail -n +8 "$CHANGELOG_FILE" >> "$new_temp_file"
+    
+    # Replace temp file
+    mv "$new_temp_file" "$temp_file"
+  fi
+  
+  # Replace the original changelog with the new one
+  mv "$temp_file" "$CHANGELOG_FILE"
   
   echo "CHANGELOG.md updated with new version $version"
 }
