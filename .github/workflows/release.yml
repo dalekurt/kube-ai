@@ -1,0 +1,88 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+        
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.19'
+      
+      - name: Get version from tag
+        id: get_version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+      
+      - name: Update version info
+        run: |
+          git_commit=$(git rev-parse --short HEAD)
+          build_date=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          echo "Setting version to $VERSION, commit $git_commit, build date $build_date"
+          sed -i "s/Version = \".*\"/Version = \"$VERSION\"/g" pkg/version/version.go
+          sed -i "s/GitCommit = \".*\"/GitCommit = \"$git_commit\"/g" pkg/version/version.go
+          sed -i "s/BuildDate = \".*\"/BuildDate = \"$build_date\"/g" pkg/version/version.go
+          cat pkg/version/version.go
+      
+      - name: Build binaries
+        run: |
+          mkdir -p release
+          # Linux builds
+          GOOS=linux GOARCH=amd64 go build -ldflags="-s -w" -o release/kube-ai-linux-amd64 ./cmd/kube-ai
+          GOOS=linux GOARCH=arm64 go build -ldflags="-s -w" -o release/kube-ai-linux-arm64 ./cmd/kube-ai
+          
+          # MacOS builds
+          GOOS=darwin GOARCH=amd64 go build -ldflags="-s -w" -o release/kube-ai-darwin-amd64 ./cmd/kube-ai
+          GOOS=darwin GOARCH=arm64 go build -ldflags="-s -w" -o release/kube-ai-darwin-arm64 ./cmd/kube-ai
+          
+          # Windows build
+          GOOS=windows GOARCH=amd64 go build -ldflags="-s -w" -o release/kube-ai-windows-amd64.exe ./cmd/kube-ai
+          
+          # Create checksums
+          cd release && sha256sum kube-ai-* > checksums.txt
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Kube-AI v${{ env.VERSION }}
+          files: |
+            release/*
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body: |
+            # Kube-AI ${{ env.VERSION }}
+            
+            ## What's Changed
+            
+            Please refer to the [changelog](CHANGELOG.md) for a detailed list of changes.
+            
+            ## Installation
+            
+            ### Linux (amd64)
+            ```bash
+            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-linux-amd64 -o kube-ai
+            chmod +x kube-ai
+            sudo mv kube-ai /usr/local/bin/
+            ```
+            
+            ### macOS (Apple Silicon)
+            ```bash
+            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-darwin-arm64 -o kube-ai
+            chmod +x kube-ai
+            sudo mv kube-ai /usr/local/bin/
+            ```
+            
+            See the [documentation](README.md) for more details. 
