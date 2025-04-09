@@ -1,0 +1,38 @@
+version: 1
+
+# The following variables can be substituted in the build definitions:
+# - $GO_VERSION: 1.24
+# - $GOOS: The build's GOOS value (such as "linux")
+# - $GOARCH: The build's GOARCH value (such as "amd64")
+# - $TAG_NAME: The value of tagName in a generated workflow
+
+env:
+  - GO111MODULE=on
+  - CGO_ENABLED=0
+
+# Path to the goreleaser config.
+goreleaser-path: .goreleaser.yml
+
+flags:
+  - -trimpath
+
+# Go binary to run.
+go: go
+
+goos: 
+  - linux
+  - darwin
+  - windows
+
+goarch:
+  - amd64
+  - arm64
+
+ignore:
+  - goos: windows
+    goarch: arm64
+
+main: ./cmd/kube-ai
+
+ldflags:
+  - -s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} 
