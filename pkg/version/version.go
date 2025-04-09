@@ -3,11 +3,11 @@ package version
 // Version information
 var (
 	// Version is the current version of kube-ai
-	Version = "0.1.1"
+	Version = "0.1.2"
 
 	// GitCommit is the git commit that was compiled
-	GitCommit = "da21dce"
+	GitCommit = "0cdae89"
 
 	// BuildDate is the date when the binary was built
-	BuildDate = "2025-04-09T22:50:28Z"
+	BuildDate = "2025-04-09T22:52:35Z"
 )
