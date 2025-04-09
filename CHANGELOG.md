@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.5] - 2025-04-09
 
+## [0.1.5] - 2025-04-09
+
 ### Added
 - docs: update README.md with comprehensive feature overview (83b18ba)
 - feat: add cmd/kube-ai directory with main.go and commands.go (45a1509)
