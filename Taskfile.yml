@@ -28,6 +28,8 @@ tasks:
       - echo "  task build:all        - Build for all platforms"
       - echo "  task test             - Run tests"
       - echo "  task lint             - Run linting"
+      - echo "  task changelog        - Update CHANGELOG.md with changes since last version"
+      - echo "  task changelog:specific  - Update CHANGELOG.md with specific version (task changelog:specific -- 1.0.0)"
       - echo "  task release          - Create a new release (task release -- 1.0.0)"
       - echo "  task docker:build     - Build Docker image"
       - echo "  task docker:push      - Push Docker image to registry"
@@ -80,6 +82,25 @@ tasks:
     cmds:
       - if ! command -v golangci-lint &> /dev/null; then echo "golangci-lint not found, installing..."; go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest; fi
       - golangci-lint run ./...
+
+  changelog:
+    desc: Update CHANGELOG.md with changes since last version
+    cmds:
+      - ./scripts/update-changelog.sh
+      - echo "CHANGELOG.md updated with next version"
+
+  changelog:specific:
+    desc: Update CHANGELOG.md with specific version
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Error: Version is required. Example: task changelog:specific -- 1.0.0"
+          exit 1
+        fi
+      - ./scripts/update-changelog.sh {{.CLI_ARGS}}
+      - echo "CHANGELOG.md updated with version {{.CLI_ARGS}}"
+    requires:
+      vars: [CLI_ARGS]
 
   release:
     desc: Create a new release (requires version argument)
