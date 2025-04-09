@@ -49,3 +49,4 @@ dist/
 # Temporary files
 tmp/
 temp/ .task/
+.task/checksum/
