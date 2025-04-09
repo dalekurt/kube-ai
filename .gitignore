@@ -9,7 +9,7 @@
 # Binaries and build artifacts
 bin/
 dist/
-kube-ai
+/kube-ai
 *.exe
 *.dll
 *.so
@@ -48,5 +48,6 @@ dist/
 
 # Temporary files
 tmp/
-temp/ .task/
+temp/
+.task/
 .task/checksum/
