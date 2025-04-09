@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-app
+  labels:
+    app: test-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: test-app
+  template:
+    metadata:
+      labels:
+        app: test-app
+    spec:
+      containers:
+      - name: test-container
+        image: busybox
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo 'WARNING: This is a test warning message'; echo 'ERROR: This is a test error message'; sleep 5; done"] 
