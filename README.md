@@ -290,6 +290,44 @@ task test
 task release -- 1.0.0
 ```
 
+### Release Process
+
+The project includes scripts to automate the release process:
+
+#### Update CHANGELOG.md
+
+The `update-changelog.sh` script automatically generates an updated CHANGELOG.md entry based on git commits:
+
+```bash
+# Automatically calculate next version and update CHANGELOG.md
+./scripts/update-changelog.sh
+
+# Specify a specific version
+./scripts/update-changelog.sh 1.0.0
+```
+
+The script categorizes commits based on conventional commit format:
+- `feat:` or `add:` prefixes are categorized as "Added"
+- `fix:` or `bug:` prefixes are categorized as "Fixed"
+- `change:`, `refactor:`, or `chore:` prefixes are categorized as "Changed"
+
+#### Create GitHub Release
+
+The `auto-release.sh` script automates the GitHub release process:
+
+```bash
+# Create a release for version 0.1.0
+./scripts/auto-release.sh 0.1.0
+```
+
+This script:
+1. Validates that the version follows semantic versioning format
+2. Checks that the version exists in CHANGELOG.md
+3. Extracts release notes from CHANGELOG.md
+4. Builds binaries for all platforms
+5. Creates a GitHub release draft with the binaries and release notes
+6. Builds and pushes a Docker image
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
