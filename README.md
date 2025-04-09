@@ -2,6 +2,17 @@
 
 Kube-AI is an AI-powered tool for Kubernetes that helps automate and enhance Kubernetes operations, providing intelligent assistance for cluster management and application deployment.
 
+## Features
+
+- **Resource Analysis**: Analyze Kubernetes resources for best practices and potential issues
+- **Resource Optimization**: Get AI-powered recommendations for optimizing CPU and memory usage
+- **Scaling Strategies**: Receive intelligent scaling suggestions based on workload patterns
+- **Manifest Generation**: Generate Kubernetes manifests from natural language descriptions
+- **Error Explanation**: Get AI-powered explanations and solutions for Kubernetes errors
+- **Log Analysis**: Analyze Kubernetes logs to identify patterns, issues, and solutions
+- **Multi-Provider Support**: Works with multiple AI providers (Ollama, OpenAI, Anthropic, Gemini, AnythingLLM)
+- **Customizable**: Switch between providers and models based on your needs
+
 ## Installation
 
 ### Using Krew
@@ -21,39 +32,106 @@ If you prefer to install manually:
 3. Make it executable: `chmod +x kubectl-ai`
 4. Move it to a directory in your PATH, e.g., `mv kubectl-ai /usr/local/bin/`
 
-### Testing plugin installation locally
+### Docker
+
+You can also run Kube-AI as a Docker container:
 
 ```bash
-kubectl krew install --manifest=ai.yaml --archive=<generated-archive>.tar.gz
-```
-
-### Generate sha256
-
-```bash
-shasum -a 256 releases/download/<VERSION>/*.tar.gz
+docker pull dalekurt/kube-ai:latest
+docker run --rm -it dalekurt/kube-ai:latest version
 ```
 
 ## Usage
 
 Once installed, you can use kube-ai with the following commands:
 
-### Execute AI operations
+### Resource Analysis
+
+Analyze Kubernetes resources for best practices and potential issues:
 
 ```bash
-kubectl ai <command> [options]
+# Analyze a deployment
+kubectl ai analyze deployment my-deployment
+
+# Analyze from a YAML file
+kubectl ai analyze -f deployment.yaml
 ```
 
-For example:
+### Resource Optimization
+
+Get AI-powered recommendations for optimizing CPU and memory usage:
 
 ```bash
-kubectl ai analyze deployment my-app
-kubectl ai optimize resource-usage
-kubectl ai suggest scaling-strategy
+# Optimize resources for a deployment file
+kubectl ai optimize -f deployment.yaml
 ```
+
+### Scaling Strategies
+
+Receive intelligent scaling suggestions based on workload patterns:
+
+```bash
+# Get scaling recommendations
+kubectl ai suggest-scaling my-deployment
+
+# With metrics data
+kubectl ai suggest-scaling -m metrics-data.json -c current-config.yaml
+```
+
+### Manifest Generation
+
+Generate Kubernetes manifests from natural language descriptions:
+
+```bash
+# Generate a manifest from a description
+kubectl ai generate "Create a stateful MySQL database with 5GB of persistent storage"
+
+# Generate from a description file
+kubectl ai generate -f description.txt
+```
+
+### Error Explanation
+
+Get AI-powered explanations and solutions for Kubernetes errors:
+
+```bash
+# Explain an error message
+kubectl ai explain "Failed to pull image: ErrImagePull"
+
+# Pipe kubectl error to explanation
+kubectl get pods 2>&1 | kubectl ai explain
+```
+
+### Log Analysis
+
+Analyze Kubernetes logs with AI to identify issues and get troubleshooting recommendations:
+
+```bash
+# Analyze logs from a deployment
+kubectl ai analyze-logs deployment my-app -n my-namespace
+
+# Analyze logs from a specific pod
+kubectl ai analyze-logs pod my-app-pod-1234 -n my-namespace
+
+# Analyze only error logs
+kubectl ai analyze-logs deployment my-app --errors-only
+
+# Get JSON output for further processing
+kubectl ai analyze-logs deployment my-app --output json > analysis.json
+```
+
+Available options:
+- `--namespace, -n`: Namespace of the resource (default: "default")
+- `--container, -c`: Container name for pods with multiple containers
+- `--tail, -t`: Number of lines to include from the end of logs (default: 1000)
+- `--since, -s`: Only return logs newer than a duration in seconds (default: 3600)
+- `--previous, -p`: Include logs from previously terminated containers
+- `--errors-only, -e`: Analyze only error logs
+- `--output, -o`: Output format (text or json) 
 
 ### AI Provider Management
 
-Kube-AI now supports multiple AI providers:
+Kube-AI supports multiple AI providers:
 
 - **Ollama** (default, local): Uses a locally running Ollama instance
 - **OpenAI**: Uses OpenAI GPT models via API
@@ -122,14 +200,6 @@ kubectl ai set-model llama3.3
 kubectl ai set-model claude-3-opus-20240229
 ```
 
-### Chat with the AI
-
-Start a conversation about Kubernetes:
-
-```bash
-kubectl ai chat "How do I implement a StatefulSet?"
-```
-
 ## Configuration
 
 Kube-AI stores its configuration in `~/.kube-ai/config.json`. This includes:
@@ -159,20 +229,36 @@ kube-ai/
 ├── cmd/             # Application entry points
 ├── pkg/             # Public packages
 │   ├── k8s/         # Kubernetes client utilities
+│   │   └── logs/    # Kubernetes log collection and parsing
 │   ├── ai/          # AI service and integration
-│   │   └── providers/  # AI provider implementations
+│   │   ├── providers/  # AI provider implementations
+│   │   └── analyzers/  # Specialized analyzers (logs, etc.)
+│   └── version/     # Version information
 ├── internal/        # Private packages
 │   ├── auth/        # Authentication utilities
 │   └── config/      # Configuration management
+├── scripts/         # Helper scripts for release and development
 ```
 
 ## Development
 
 This project uses Go modules for dependency management.
 
+### Setting Up Development Environment
+
 ```bash
-# Add a new dependency
-go get github.com/some/dependency
+# Clone the repository
+git clone https://github.com/dalekurt/kube-ai.git
+cd kube-ai
+
+# Install dependencies
+go mod download
+
+# Build the binary
+go build -o kube-ai ./cmd/kube-ai
+
+# Run tests
+go test -v ./...
 ```
 
 ### Adding a New Provider
@@ -183,9 +269,36 @@ To add a new AI provider:
 2. Update the provider factory in `pkg/ai/providers/factory.go`
 3. Add provider constants and configuration in `internal/config/config.go`
 
+### Using Taskfile
+
+This project uses Taskfile for common development tasks:
+
+```bash
+# Install task (https://taskfile.dev)
+go install github.com/go-task/task/v3/cmd/task@latest
+
+# Build for your platform
+task build
+
+# Build for all platforms
+task build:all
+
+# Run tests
+task test
+
+# Create a release (creates a tag and pushes it)
+task release -- 1.0.0
+```
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
 ## License
 
@@ -197,57 +310,4 @@ If you encounter any issues or have questions, please file an issue on the [GitH
 
 ## Security Note
 
-Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information.
-
-## Log Analysis
-
-Analyze Kubernetes logs with AI to identify issues and get troubleshooting recommendations:
-
-```bash
-kubectl ai analyze-logs [resource-type] [resource-name] [options]
-```
-
-For example:
-
-```bash
-# Analyze logs from a deployment
-kubectl ai analyze-logs deployment my-app -n my-namespace
-
-# Analyze logs from a specific pod
-kubectl ai analyze-logs pod my-app-pod-1234 -n my-namespace
-
-# Analyze only error logs
-kubectl ai analyze-logs deployment my-app --errors-only
-
-# Get JSON output for further processing
-kubectl ai analyze-logs deployment my-app --output json > analysis.json
-```
-
-Available options:
-- `--namespace, -n`: Namespace of the resource (default: "default")
-- `--container, -c`: Container name for pods with multiple containers
-- `--tail, -t`: Number of lines to include from the end of logs (default: 1000)
-- `--since, -s`: Only return logs newer than a duration in seconds (default: 3600)
-- `--previous, -p`: Include logs from previously terminated containers
-- `--errors-only, -e`: Analyze only error logs
-- `--output, -o`: Output format (text or json) 
-
-### Features
-
-The log analysis feature provides:
-
-- **AI-powered insights**: Identifies patterns, root causes, and potential solutions for issues found in logs
-- **Multi-resource support**: Works with pods, deployments, statefulsets, and other Kubernetes resources
-- **Error hotspot detection**: Identifies which resources are generating the most errors
-- **Custom filtering**: Filter logs by container, time range, and more
-- **Multiple output formats**: Human-readable text or JSON for programmatic processing
-- **Provider flexibility**: Works with all supported AI providers including local Ollama for air-gapped environments
-
-Under the hood, the tool:
-1. Collects logs from the specified Kubernetes resource
-2. Analyzes log patterns and structures
-3. Sends relevant log data to your selected AI provider
-4. Processes the AI recommendations into actionable insights
-5. Presents findings in a clear, structured format
-
-This feature is especially useful for troubleshooting complex application issues, identifying recurring problems, and getting intelligent recommendations for resolving Kubernetes-related errors. 
+Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information. 
