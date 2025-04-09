@@ -1,0 +1,23 @@
+# Git
+.git
+.github
+.gitignore
+
+# Build artifacts
+bin/
+release/
+coverage/
+
+# Task files
+Taskfile.yml
+
+# Development files
+*.md
+.vscode/
+.idea/
+*.env
+*.log
+test/
+
+# Other
+.DS_Store 
