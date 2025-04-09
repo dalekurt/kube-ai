@@ -1,0 +1,73 @@
+apiVersion: krew.googlecontainertools.github.com/v1alpha2
+kind: Plugin
+metadata:
+  name: ai
+spec:
+  version: "v0.1.0"
+  platforms:
+    - selector:
+        matchLabels:
+          os: linux
+          arch: amd64
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.0/kube-ai_Linux_x86_64.tar.gz
+      sha256: "{{ sha256 will be generated during release }}"
+      files:
+        - from: "kube-ai"
+          to: "."
+        - from: "LICENSE"
+          to: "."
+      bin: "kube-ai"
+    - selector:
+        matchLabels:
+          os: linux
+          arch: arm64
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.0/kube-ai_Linux_arm64.tar.gz
+      sha256: "{{ sha256 will be generated during release }}"
+      files:
+        - from: "kube-ai"
+          to: "."
+        - from: "LICENSE"
+          to: "."
+      bin: "kube-ai"
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: amd64
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.0/kube-ai_Darwin_x86_64.tar.gz
+      sha256: "{{ sha256 will be generated during release }}"
+      files:
+        - from: "kube-ai"
+          to: "."
+        - from: "LICENSE"
+          to: "."
+      bin: "kube-ai"
+    - selector:
+        matchLabels:
+          os: darwin
+          arch: arm64
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.0/kube-ai_Darwin_arm64.tar.gz
+      sha256: "{{ sha256 will be generated during release }}"
+      files:
+        - from: "kube-ai"
+          to: "."
+        - from: "LICENSE"
+          to: "."
+      bin: "kube-ai"
+    - selector:
+        matchLabels:
+          os: windows
+          arch: amd64
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.0/kube-ai_Windows_x86_64.zip
+      sha256: "{{ sha256 will be generated during release }}"
+      files:
+        - from: "kube-ai.exe"
+          to: "."
+        - from: "LICENSE"
+          to: "."
+      bin: "kube-ai.exe"
+  shortDescription: AI-powered Kubernetes tool
+  description: |
+    kube-ai is an AI-powered tool for Kubernetes that helps automate and enhance 
+    Kubernetes operations, providing intelligent assistance for cluster management
+    and application deployment.
+  homepage: https://github.com/dalekurt/kube-ai 

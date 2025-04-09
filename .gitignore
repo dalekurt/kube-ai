@@ -1,0 +1,51 @@
+# IDE specific files
+.cursor
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Binaries and build artifacts
+bin/
+dist/
+kube-ai
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+coverage.html
+
+# Go workspace file
+go.work
+
+# Dependency directories
+vendor/
+
+# Environment variables
+.env
+.env.local
+.envrc
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Debug files
+debug
+
+# goreleaser artifacts
+dist/
+
+# Log files
+*.log
+
+# Temporary files
+tmp/
+temp/ 
