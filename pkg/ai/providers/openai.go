@@ -2,6 +2,7 @@ package providers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -195,4 +196,79 @@ func (p *OpenAIProvider) SetModelName(modelName string) {
 // RequiresAPIKey returns true if the provider requires an API key
 func (p *OpenAIProvider) RequiresAPIKey() bool {
 	return true
+}
+
+// GenerateCompletion sends a prompt to OpenAI and returns the response
+func (p *OpenAIProvider) GenerateCompletion(ctx context.Context, prompt string) (string, error) {
+	// Create the request body
+	requestBody := map[string]interface{}{
+		"model": p.config.ModelName,
+		"messages": []map[string]string{
+			{
+				"role":    "system",
+				"content": "You are a Kubernetes expert assistant. Provide concise, accurate information about Kubernetes concepts, troubleshooting, and best practices.",
+			},
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+		"temperature": 0.3,
+	}
+
+	// Convert request body to JSON
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("error creating request JSON: %w", err)
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequestWithContext(ctx, "POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+p.config.APIKey)
+
+	// Send the request
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error sending request to OpenAI: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for error status code
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("error from OpenAI API: status code %d, body: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Read the response
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("error reading response body: %w", err)
+	}
+
+	// Parse the response
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	err = json.Unmarshal(bodyBytes, &response)
+	if err != nil {
+		return "", fmt.Errorf("error parsing response JSON: %w", err)
+	}
+
+	// Check if we have choices in the response
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("no completion returned from OpenAI")
+	}
+
+	// Return the completion text
+	return response.Choices[0].Message.Content, nil
 }

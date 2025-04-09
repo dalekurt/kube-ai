@@ -1,5 +1,9 @@
 package providers
 
+import (
+	"context"
+)
+
 // Provider defines the interface for AI service providers
 type Provider interface {
 	// GenerateResponse generates a response for a prompt
@@ -22,6 +26,9 @@ type Provider interface {
 
 	// RequiresAPIKey returns true if the provider requires an API key
 	RequiresAPIKey() bool
+
+	// GenerateCompletion sends a prompt to the AI provider and returns the response
+	GenerateCompletion(ctx context.Context, prompt string) (string, error)
 }
 
 // ProviderConfig contains common configuration for providers

@@ -2,6 +2,7 @@ package providers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -208,4 +209,12 @@ func (p *GeminiProvider) SetModelName(modelName string) {
 // RequiresAPIKey returns true if the provider requires an API key
 func (p *GeminiProvider) RequiresAPIKey() bool {
 	return true
+}
+
+// GenerateCompletion sends a prompt to Gemini and returns the response
+func (p *GeminiProvider) GenerateCompletion(ctx context.Context, prompt string) (string, error) {
+	// For Gemini, we'll use a Kubernetes-specific system prompt
+	systemPrompt := "You are a Kubernetes expert assistant. Provide concise, accurate information about Kubernetes concepts, troubleshooting, and best practices."
+
+	return p.ChatCompletion(systemPrompt, prompt, 0.7)
 }

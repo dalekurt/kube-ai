@@ -2,6 +2,7 @@ package providers
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -178,4 +179,12 @@ func (p *AnythingLLMProvider) RequiresAPIKey() bool {
 	// AnythingLLM might require an API key depending on its configuration
 	// We'll return false as it can work without one in local deployments
 	return false
+}
+
+// GenerateCompletion sends a prompt to AnythingLLM and returns the response
+func (p *AnythingLLMProvider) GenerateCompletion(ctx context.Context, prompt string) (string, error) {
+	// For AnythingLLM, we'll use the existing ChatCompletion method with an empty system prompt
+	systemPrompt := "You are a Kubernetes expert assistant. Provide concise, accurate information about Kubernetes concepts, troubleshooting, and best practices."
+
+	return p.ChatCompletion(systemPrompt, prompt, 0.7)
 }

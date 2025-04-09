@@ -1,7 +1,9 @@
 package providers
 
 import (
+	"bufio"
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -241,4 +243,75 @@ func (p *OllamaProvider) SetModelName(modelName string) {
 // RequiresAPIKey returns true if the provider requires an API key
 func (p *OllamaProvider) RequiresAPIKey() bool {
 	return false
+}
+
+// GenerateCompletion sends a prompt to Ollama and returns the response
+func (p *OllamaProvider) GenerateCompletion(ctx context.Context, prompt string) (string, error) {
+	// Create the request body
+	requestBody := map[string]interface{}{
+		"model":  p.config.ModelName,
+		"prompt": prompt,
+		"stream": false, // Set to false to get a complete response
+		"options": map[string]interface{}{
+			"temperature": 0.7,
+		},
+	}
+
+	// Convert request body to JSON
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return "", fmt.Errorf("error creating request JSON: %w", err)
+	}
+
+	// Create the HTTP request
+	req, err := http.NewRequestWithContext(ctx, "POST", p.config.BaseURL+"/api/generate", bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return "", fmt.Errorf("error creating request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	// Send the request
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return "", fmt.Errorf("error sending request to Ollama: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Check for error status code
+	if resp.StatusCode != http.StatusOK {
+		bodyBytes, _ := io.ReadAll(resp.Body)
+		return "", fmt.Errorf("error from Ollama API: status code %d, body: %s", resp.StatusCode, string(bodyBytes))
+	}
+
+	// Ollama may still send multiple JSON objects even with stream:false
+	// Read the response line by line to handle this case
+	scanner := bufio.NewScanner(resp.Body)
+	var responseText strings.Builder
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "" {
+			continue
+		}
+
+		// Parse each line as a separate JSON object
+		var responseObj OllamaResponse
+		if err := json.Unmarshal([]byte(line), &responseObj); err != nil {
+			return "", fmt.Errorf("error parsing response JSON: %w", err)
+		}
+
+		// Append the response text
+		responseText.WriteString(responseObj.Response)
+
+		// If done is true, this is the last message
+		if responseObj.Done {
+			break
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return "", fmt.Errorf("error reading response: %w", err)
+	}
+
+	return responseText.String(), nil
 }

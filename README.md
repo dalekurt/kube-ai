@@ -197,4 +197,57 @@ If you encounter any issues or have questions, please file an issue on the [GitH
 
 ## Security Note
 
-Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information. 
+Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information.
+
+## Log Analysis
+
+Analyze Kubernetes logs with AI to identify issues and get troubleshooting recommendations:
+
+```bash
+kubectl ai analyze-logs [resource-type] [resource-name] [options]
+```
+
+For example:
+
+```bash
+# Analyze logs from a deployment
+kubectl ai analyze-logs deployment my-app -n my-namespace
+
+# Analyze logs from a specific pod
+kubectl ai analyze-logs pod my-app-pod-1234 -n my-namespace
+
+# Analyze only error logs
+kubectl ai analyze-logs deployment my-app --errors-only
+
+# Get JSON output for further processing
+kubectl ai analyze-logs deployment my-app --output json > analysis.json
+```
+
+Available options:
+- `--namespace, -n`: Namespace of the resource (default: "default")
+- `--container, -c`: Container name for pods with multiple containers
+- `--tail, -t`: Number of lines to include from the end of logs (default: 1000)
+- `--since, -s`: Only return logs newer than a duration in seconds (default: 3600)
+- `--previous, -p`: Include logs from previously terminated containers
+- `--errors-only, -e`: Analyze only error logs
+- `--output, -o`: Output format (text or json) 
+
+### Features
+
+The log analysis feature provides:
+
+- **AI-powered insights**: Identifies patterns, root causes, and potential solutions for issues found in logs
+- **Multi-resource support**: Works with pods, deployments, statefulsets, and other Kubernetes resources
+- **Error hotspot detection**: Identifies which resources are generating the most errors
+- **Custom filtering**: Filter logs by container, time range, and more
+- **Multiple output formats**: Human-readable text or JSON for programmatic processing
+- **Provider flexibility**: Works with all supported AI providers including local Ollama for air-gapped environments
+
+Under the hood, the tool:
+1. Collects logs from the specified Kubernetes resource
+2. Analyzes log patterns and structures
+3. Sends relevant log data to your selected AI provider
+4. Processes the AI recommendations into actionable insights
+5. Presents findings in a clear, structured format
+
+This feature is especially useful for troubleshooting complex application issues, identifying recurring problems, and getting intelligent recommendations for resolving Kubernetes-related errors. 

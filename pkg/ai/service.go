@@ -1,6 +1,7 @@
 package ai
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -192,4 +193,13 @@ func (s *Service) GetCurrentProvider() string {
 // GetCurrentModel returns the name of the currently active model
 func (s *Service) GetCurrentModel() string {
 	return s.provider.GetModelName()
+}
+
+// Query sends a single query to the AI provider and returns the response
+func (s *Service) Query(ctx context.Context, prompt string) (string, error) {
+	response, err := s.provider.GenerateCompletion(ctx, prompt)
+	if err != nil {
+		return "", fmt.Errorf("error querying AI provider: %w", err)
+	}
+	return response, nil
 }
