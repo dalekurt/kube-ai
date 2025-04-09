@@ -71,34 +71,56 @@ jobs:
           echo "$CHANGELOG_CONTENT" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
       
+      - name: Get commits since last release
+        id: get_commits
+        run: |
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+          if [ -z "$PREVIOUS_TAG" ]; then
+            COMMITS=$(git log --pretty=format:"- %h %s" --reverse)
+          else
+            COMMITS=$(git log --pretty=format:"- %h %s" ${PREVIOUS_TAG}..HEAD --reverse)
+          fi
+          echo "COMMITS<<EOF" >> $GITHUB_ENV
+          echo "$COMMITS" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          name: Kube-AI v${{ env.VERSION }}
+          name: ${{ env.VERSION }}
           files: |
             bin/*
           draft: false
           prerelease: false
           generate_release_notes: false
           body: |
-            # Kube-AI ${{ env.VERSION }}
-            
             ${{ env.CHANGELOG_CONTENT }}
+            
+            ## Changelog
+            ${{ env.COMMITS }}
             
             ## Installation
             
-            ### Linux (amd64)
+            ### Using Krew
+            
             ```bash
-            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-linux-amd64 -o kube-ai
-            chmod +x kube-ai
-            sudo mv kube-ai /usr/local/bin/
+            kubectl krew install ai
             ```
             
-            ### macOS (Apple Silicon)
+            ### Manual Installation
+            
+            #### Linux (amd64)
             ```bash
-            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-darwin-arm64 -o kube-ai
-            chmod +x kube-ai
-            sudo mv kube-ai /usr/local/bin/
+            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-linux-amd64 -o kubectl-ai
+            chmod +x kubectl-ai
+            sudo mv kubectl-ai /usr/local/bin/
+            ```
+            
+            #### macOS (Apple Silicon)
+            ```bash
+            curl -L https://github.com/dalekurt/kube-ai/releases/download/v${{ env.VERSION }}/kube-ai-darwin-arm64 -o kubectl-ai
+            chmod +x kubectl-ai
+            sudo mv kubectl-ai /usr/local/bin/
             ```
             
             See the [documentation](README.md) for more details. 
