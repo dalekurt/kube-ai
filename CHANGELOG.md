@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.0] - 2025-04-09
 
-## [0.1.0] - 2025-04-09
-
 ### Added
 - Initial release of Kube-AI
 - CLI commands for analyzing Kubernetes resources
