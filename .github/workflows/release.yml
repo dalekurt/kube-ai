@@ -63,6 +63,91 @@ jobs:
           # Create checksums
           cd ./bin && sha256sum kube-ai-* > checksums.txt
       
+      - name: Package archives for Krew distribution
+        run: |
+          mkdir -p ./dist
+          # Linux amd64
+          mkdir -p ./dist/linux_amd64
+          cp ./bin/kube-ai-linux-amd64 ./dist/linux_amd64/kube-ai
+          cp LICENSE ./dist/linux_amd64/
+          cd ./dist/linux_amd64
+          tar czf ../kube-ai_Linux_x86_64.tar.gz *
+          cd ../..
+          
+          # Linux arm64
+          mkdir -p ./dist/linux_arm64
+          cp ./bin/kube-ai-linux-arm64 ./dist/linux_arm64/kube-ai
+          cp LICENSE ./dist/linux_arm64/
+          cd ./dist/linux_arm64
+          tar czf ../kube-ai_Linux_arm64.tar.gz *
+          cd ../..
+          
+          # Darwin amd64
+          mkdir -p ./dist/darwin_amd64
+          cp ./bin/kube-ai-darwin-amd64 ./dist/darwin_amd64/kube-ai
+          cp LICENSE ./dist/darwin_amd64/
+          cd ./dist/darwin_amd64
+          tar czf ../kube-ai_Darwin_x86_64.tar.gz *
+          cd ../..
+          
+          # Darwin arm64
+          mkdir -p ./dist/darwin_arm64
+          cp ./bin/kube-ai-darwin-arm64 ./dist/darwin_arm64/kube-ai
+          cp LICENSE ./dist/darwin_arm64/
+          cd ./dist/darwin_arm64
+          tar czf ../kube-ai_Darwin_arm64.tar.gz *
+          cd ../..
+          
+          # Windows amd64
+          mkdir -p ./dist/windows_amd64
+          cp ./bin/kube-ai-windows-amd64.exe ./dist/windows_amd64/kube-ai.exe
+          cp LICENSE ./dist/windows_amd64/
+          cd ./dist/windows_amd64
+          zip -r ../kube-ai_Windows_x86_64.zip *
+          cd ../..
+          
+          # Calculate SHA256 checksums for the archives
+          cd ./dist
+          sha256sum kube-ai_Linux_x86_64.tar.gz > linux_amd64_sha256
+          sha256sum kube-ai_Linux_arm64.tar.gz > linux_arm64_sha256
+          sha256sum kube-ai_Darwin_x86_64.tar.gz > darwin_amd64_sha256
+          sha256sum kube-ai_Darwin_arm64.tar.gz > darwin_arm64_sha256
+          sha256sum kube-ai_Windows_x86_64.zip > windows_amd64_sha256
+          cd ..
+      
+      - name: Update ai.yaml for Krew
+        run: |
+          # Update version in ai.yaml
+          sed -i "s/version: \"v[0-9]*\.[0-9]*\.[0-9]*\"/version: \"v$VERSION\"/g" ai.yaml
+          
+          # Update download URLs
+          sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Linux_x86_64.tar.gz|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Linux_x86_64.tar.gz|g" ai.yaml
+          sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Linux_arm64.tar.gz|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Linux_arm64.tar.gz|g" ai.yaml
+          sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Darwin_x86_64.tar.gz|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Darwin_x86_64.tar.gz|g" ai.yaml
+          sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Darwin_arm64.tar.gz|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Darwin_arm64.tar.gz|g" ai.yaml
+          sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Windows_x86_64.zip|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Windows_x86_64.zip|g" ai.yaml
+          
+          # Update SHA256 checksums
+          LINUX_AMD64_SHA=$(cat ./dist/linux_amd64_sha256 | awk '{print $1}')
+          LINUX_ARM64_SHA=$(cat ./dist/linux_arm64_sha256 | awk '{print $1}')
+          DARWIN_AMD64_SHA=$(cat ./dist/darwin_amd64_sha256 | awk '{print $1}')
+          DARWIN_ARM64_SHA=$(cat ./dist/darwin_arm64_sha256 | awk '{print $1}')
+          WINDOWS_AMD64_SHA=$(cat ./dist/windows_amd64_sha256 | awk '{print $1}')
+          
+          # Find the line number for each platform's sha256 field and update it
+          sed -i "/matchLabels:.*os: linux.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$LINUX_AMD64_SHA\"/" ai.yaml
+          sed -i "/matchLabels:.*os: linux.*arch: arm64/,/sha256:/s/sha256: .*/sha256: \"$LINUX_ARM64_SHA\"/" ai.yaml
+          sed -i "/matchLabels:.*os: darwin.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$DARWIN_AMD64_SHA\"/" ai.yaml
+          sed -i "/matchLabels:.*os: darwin.*arch: arm64/,/sha256:/s/sha256: .*/sha256: \"$DARWIN_ARM64_SHA\"/" ai.yaml
+          sed -i "/matchLabels:.*os: windows.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$WINDOWS_AMD64_SHA\"/" ai.yaml
+          
+          # Show the updated ai.yaml
+          cat ai.yaml
+      
+      - name: Copy archives to bin directory for release
+        run: |
+          cp ./dist/kube-ai_*.* ./bin/
+      
       - name: Extract release notes from CHANGELOG
         id: extract_notes
         run: |
@@ -90,6 +175,7 @@ jobs:
           name: ${{ env.VERSION }}
           files: |
             bin/*
+            ai.yaml
           draft: false
           prerelease: false
           generate_release_notes: false
