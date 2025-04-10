@@ -7,9 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.7] - 2025-04-10
-
-## [0.1.7] - 2025-04-10
+## [0.1.7] - 2025-04-19
 
 ### Added
 - Fix linting errors: handle unchecked errors, remove unused variables, add unused commands to rootCmd (eb6265a)
@@ -25,8 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Other
 - Updated README.md (682c459)
 - Enable SLSA supply chain security by configuring workflow to run on release publication (0a87e1b)
-
-## [0.1.6] - 2025-04-09
+- Add step to commit updated ai.yaml back to the repository during release (56dc9bd)
 
 ## [0.1.6] - 2025-04-09
 
