@@ -144,6 +144,14 @@ jobs:
           # Show the updated ai.yaml
           cat ai.yaml
       
+      - name: Commit updated ai.yaml back to the repository
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ai.yaml
+          git commit -m "Update ai.yaml for v$VERSION [skip ci]" || echo "No changes to commit"
+          git push
+      
       - name: Copy archives to bin directory for release
         run: |
           cp ./dist/kube-ai_*.* ./bin/
