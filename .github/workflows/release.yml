@@ -135,52 +135,55 @@ jobs:
           sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Darwin_arm64.tar.gz|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Darwin_arm64.tar.gz|g" ai.yaml
           sed -i "s|uri: https://github.com/dalekurt/kube-ai/releases/download/v[0-9]*\.[0-9]*\.[0-9]*/kube-ai_Windows_x86_64.zip|uri: https://github.com/dalekurt/kube-ai/releases/download/v$VERSION/kube-ai_Windows_x86_64.zip|g" ai.yaml
           
-          # Update SHA256 checksums
-          LINUX_AMD64_SHA=$(cat ./dist/linux_amd64_sha256 | awk '{print $1}')
-          LINUX_ARM64_SHA=$(cat ./dist/linux_arm64_sha256 | awk '{print $1}')
-          DARWIN_AMD64_SHA=$(cat ./dist/darwin_amd64_sha256 | awk '{print $1}')
-          DARWIN_ARM64_SHA=$(cat ./dist/darwin_arm64_sha256 | awk '{print $1}')
-          WINDOWS_AMD64_SHA=$(cat ./dist/windows_amd64_sha256 | awk '{print $1}')
+          # Calculate and display SHA256 checksums for debugging
+          echo "Calculating SHA256 checksums for archives..."
           
-          # Print the SHA256 values for debugging
+          # Make sure we're in the right directory
+          cd $GITHUB_WORKSPACE
+          
+          # Ensure the dist directory exists and contains our archives
+          ls -la dist/
+          
+          # Calculate SHA256 directly with full debug output
+          LINUX_AMD64_SHA=$(sha256sum dist/kube-ai_Linux_x86_64.tar.gz | awk '{print $1}')
           echo "Linux AMD64 SHA: $LINUX_AMD64_SHA"
+          
+          LINUX_ARM64_SHA=$(sha256sum dist/kube-ai_Linux_arm64.tar.gz | awk '{print $1}')
           echo "Linux ARM64 SHA: $LINUX_ARM64_SHA"
+          
+          DARWIN_AMD64_SHA=$(sha256sum dist/kube-ai_Darwin_x86_64.tar.gz | awk '{print $1}')
           echo "Darwin AMD64 SHA: $DARWIN_AMD64_SHA"
+          
+          DARWIN_ARM64_SHA=$(sha256sum dist/kube-ai_Darwin_arm64.tar.gz | awk '{print $1}')
           echo "Darwin ARM64 SHA: $DARWIN_ARM64_SHA"
+          
+          WINDOWS_AMD64_SHA=$(sha256sum dist/kube-ai_Windows_x86_64.zip | awk '{print $1}')
           echo "Windows AMD64 SHA: $WINDOWS_AMD64_SHA"
           
-          # More reliable method to update SHA256 values
-          awk -v sha="$LINUX_AMD64_SHA" '
-            /os: linux/ && /arch: amd64/ { in_block = 1 }
-            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
-            { print }
-          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          # Update SHA256 values in ai.yaml with direct sed replacements
+          echo "Updating SHA256 values in ai.yaml..."
           
-          awk -v sha="$LINUX_ARM64_SHA" '
-            /os: linux/ && /arch: arm64/ { in_block = 1 }
-            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
-            { print }
-          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          # Show original ai.yaml
+          echo "Original ai.yaml:"
+          cat ai.yaml
           
-          awk -v sha="$DARWIN_AMD64_SHA" '
-            /os: darwin/ && /arch: amd64/ { in_block = 1 }
-            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
-            { print }
-          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          # Linux AMD64
+          sed -i "s|sha256: \"{{ sha256 will be generated during release }}\"|sha256: \"$LINUX_AMD64_SHA\"|" ai.yaml
           
-          awk -v sha="$DARWIN_ARM64_SHA" '
-            /os: darwin/ && /arch: arm64/ { in_block = 1 }
-            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
-            { print }
-          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          # Linux ARM64 - need to skip the first occurrence which was updated above
+          sed -i "0,/sha256: \".*\"/! {0,/sha256: \".*\"/ s|sha256: \".*\"|sha256: \"$LINUX_ARM64_SHA\"|}" ai.yaml
           
-          awk -v sha="$WINDOWS_AMD64_SHA" '
-            /os: windows/ && /arch: amd64/ { in_block = 1 }
-            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
-            { print }
-          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          # Darwin AMD64 - need to skip the first two occurrences
+          sed -i "0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/ s|sha256: \".*\"|sha256: \"$DARWIN_AMD64_SHA\"|} }" ai.yaml
+          
+          # Darwin ARM64 - need to skip the first three occurrences
+          sed -i "0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/ s|sha256: \".*\"|sha256: \"$DARWIN_ARM64_SHA\"|} } }" ai.yaml
+          
+          # Windows AMD64 - need to skip the first four occurrences
+          sed -i "0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/! {0,/sha256: \".*\"/ s|sha256: \".*\"|sha256: \"$WINDOWS_AMD64_SHA\"|} } } }" ai.yaml
           
           # Show the updated ai.yaml
+          echo "Updated ai.yaml:"
           cat ai.yaml
       
       - name: Commit updated ai.yaml back to the repository
