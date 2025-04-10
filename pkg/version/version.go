@@ -6,8 +6,8 @@ var (
 	Version = "0.1.8"
 
 	// GitCommit is the git commit that was compiled
-	GitCommit = "34db5f5"
+	GitCommit = "01f2a34"
 
 	// BuildDate is the date when the binary was built
-	BuildDate = "2025-04-10T14:48:45Z"
+	BuildDate = "2025-04-10T14:56:58Z"
 )
