@@ -7,7 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.1.5] - 2025-04-09
+## [0.1.6] - 2025-04-09
+
+### Added
+- No new features added in this release
+
+### Changed
+- chore(deps): update actions/setup-go action to v5 (6cac02b)
+- chore(deps): update alpine docker tag to v3.21 (8d8fe71)
+- chore(deps): update actions/checkout action to v4 (5b10cab)
+- chore(deps): update slsa-framework/slsa-github-generator action to v2 (c3ec683)
+
+
+### Fixed
+- No fixes in this release
+
+### Other
+- Automate ai.yaml updates in GitHub release workflow (64d7669)
 
 ## [0.1.5] - 2025-04-09
 
