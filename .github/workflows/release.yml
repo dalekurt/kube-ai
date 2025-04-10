@@ -29,13 +29,10 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
       
-      - name: Update CHANGELOG.md with current date
+      - name: Update CHANGELOG.md for new version
         run: |
-          # Get current date in YYYY-MM-DD format
-          CURRENT_DATE=$(date +%Y-%m-%d)
-          
-          # Update the date for the current version in CHANGELOG.md
-          sed -i "s/## \[$VERSION\] - [0-9]\{4\}-[0-9]\{2\}-[0-9]\{2\}/## [$VERSION] - $CURRENT_DATE/g" CHANGELOG.md
+          echo "Updating CHANGELOG.md for version $VERSION"
+          task changelog:specific -- $VERSION
           
           # Show the updated CHANGELOG.md
           grep -A 10 "## \[$VERSION\]" CHANGELOG.md
