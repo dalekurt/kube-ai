@@ -17,6 +17,7 @@ import (
 	"kube-ai/pkg/ai/analyzers"
 	"kube-ai/pkg/k8s"
 	"kube-ai/pkg/k8s/logs"
+	"kube-ai/pkg/version"
 )
 
 // createRootCommand creates the root command for the kube-ai CLI
@@ -658,14 +659,10 @@ func createVersionCmd() *cobra.Command {
 		Short: "Show version information",
 		Long:  `Display the version, git commit, and build information for kube-ai.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			version := "dev"
-			commit := "none"
-			buildDate := "unknown"
-
 			fmt.Printf("Kube-AI - Kubernetes AI Tool\n")
-			fmt.Printf("Version: %s\n", version)
-			fmt.Printf("Commit: %s\n", commit)
-			fmt.Printf("Built: %s\n", buildDate)
+			fmt.Printf("Version: %s\n", version.Version)
+			fmt.Printf("Commit: %s\n", version.GitCommit)
+			fmt.Printf("Built: %s\n", version.BuildDate)
 		},
 	}
 
