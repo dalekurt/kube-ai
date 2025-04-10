@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [0.1.7] - 2025-04-10
 
+## [0.1.7] - 2025-04-10
+
 ### Added
 - Fix linting errors: handle unchecked errors, remove unused variables, add unused commands to rootCmd (eb6265a)
 
