@@ -142,12 +142,43 @@ jobs:
           DARWIN_ARM64_SHA=$(cat ./dist/darwin_arm64_sha256 | awk '{print $1}')
           WINDOWS_AMD64_SHA=$(cat ./dist/windows_amd64_sha256 | awk '{print $1}')
           
-          # Find the line number for each platform's sha256 field and update it
-          sed -i "/matchLabels:.*os: linux.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$LINUX_AMD64_SHA\"/" ai.yaml
-          sed -i "/matchLabels:.*os: linux.*arch: arm64/,/sha256:/s/sha256: .*/sha256: \"$LINUX_ARM64_SHA\"/" ai.yaml
-          sed -i "/matchLabels:.*os: darwin.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$DARWIN_AMD64_SHA\"/" ai.yaml
-          sed -i "/matchLabels:.*os: darwin.*arch: arm64/,/sha256:/s/sha256: .*/sha256: \"$DARWIN_ARM64_SHA\"/" ai.yaml
-          sed -i "/matchLabels:.*os: windows.*arch: amd64/,/sha256:/s/sha256: .*/sha256: \"$WINDOWS_AMD64_SHA\"/" ai.yaml
+          # Print the SHA256 values for debugging
+          echo "Linux AMD64 SHA: $LINUX_AMD64_SHA"
+          echo "Linux ARM64 SHA: $LINUX_ARM64_SHA"
+          echo "Darwin AMD64 SHA: $DARWIN_AMD64_SHA"
+          echo "Darwin ARM64 SHA: $DARWIN_ARM64_SHA"
+          echo "Windows AMD64 SHA: $WINDOWS_AMD64_SHA"
+          
+          # More reliable method to update SHA256 values
+          awk -v sha="$LINUX_AMD64_SHA" '
+            /os: linux/ && /arch: amd64/ { in_block = 1 }
+            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
+            { print }
+          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          
+          awk -v sha="$LINUX_ARM64_SHA" '
+            /os: linux/ && /arch: arm64/ { in_block = 1 }
+            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
+            { print }
+          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          
+          awk -v sha="$DARWIN_AMD64_SHA" '
+            /os: darwin/ && /arch: amd64/ { in_block = 1 }
+            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
+            { print }
+          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          
+          awk -v sha="$DARWIN_ARM64_SHA" '
+            /os: darwin/ && /arch: arm64/ { in_block = 1 }
+            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
+            { print }
+          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
+          
+          awk -v sha="$WINDOWS_AMD64_SHA" '
+            /os: windows/ && /arch: amd64/ { in_block = 1 }
+            in_block && /sha256:/ { gsub(/sha256: .*/, "sha256: \"" sha "\""); in_block = 0 }
+            { print }
+          ' ai.yaml > ai.yaml.tmp && mv ai.yaml.tmp ai.yaml
           
           # Show the updated ai.yaml
           cat ai.yaml
