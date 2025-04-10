@@ -13,77 +13,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - No new features added in this release
 
 ### Changed
-- No significant changes in this release
+- Fix: Optimize version command output by removing duplication and using version package
+- Enhance list-models command with current provider and model info
 
 ### Fixed
-- No fixes in this release
+- Improve SHA256 updating in release workflow with better debugging and direct file access
 
 ### Other
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-### Added
-- No new features added in this release
-
-### Changed
-- No significant changes in this release
-
-### Fixed
-- No fixes in this release
-
-### Other
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-### Added
-- No new features added in this release
-
-### Changed
-- No significant changes in this release
-
-### Fixed
-- No fixes in this release
-
-### Other
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-### Added
-- No new features added in this release
-
-### Changed
-- No significant changes in this release
-
-### Fixed
-- No fixes in this release
-
-### Other
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
-
-## [0.1.8] - 2025-04-10
+- Update ai.yaml for Krew plugin with proper version and SHA256 checksums
 
 ## [0.1.7] - 2025-04-19
 
 ### Added
 - Fix linting errors: handle unchecked errors, remove unused variables, add unused commands to rootCmd (eb6265a)
 
-
 ### Changed
 - chore(deps): update softprops/action-gh-release action to v2 (2a0f88c)
-
 
 ### Fixed
 - No fixes in this release
@@ -103,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - chore(deps): update alpine docker tag to v3.21 (8d8fe71)
 - chore(deps): update actions/checkout action to v4 (5b10cab)
 - chore(deps): update slsa-framework/slsa-github-generator action to v2 (c3ec683)
-
 
 ### Fixed
 - No fixes in this release
