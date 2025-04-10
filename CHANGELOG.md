@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.7] - 2025-04-10
+
+### Added
+- Fix linting errors: handle unchecked errors, remove unused variables, add unused commands to rootCmd (eb6265a)
+
+
+### Changed
+- chore(deps): update softprops/action-gh-release action to v2 (2a0f88c)
+
+
+### Fixed
+- No fixes in this release
+
+### Other
+- Updated README.md (682c459)
+- Enable SLSA supply chain security by configuring workflow to run on release publication (0a87e1b)
+
 ## [0.1.6] - 2025-04-09
 
 ## [0.1.6] - 2025-04-09
