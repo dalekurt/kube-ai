@@ -337,14 +337,21 @@ func createListModelsCmd(cfg *config.Config, aiService *ai.Service) *cobra.Comma
 	cmd := &cobra.Command{
 		Use:   "list-models",
 		Short: "List available AI models",
-		Long:  `List available AI models from Ollama.`,
+		Long:  `List available AI models from the current AI provider.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			result, err := aiService.ListModels()
 			if err != nil {
 				log.Fatalf("Error listing models: %v", err)
 			}
 
-			fmt.Println(result)
+			// Add information about current provider and model
+			var formattedOutput strings.Builder
+			formattedOutput.WriteString(result)
+			formattedOutput.WriteString("\n")
+			formattedOutput.WriteString(fmt.Sprintf("Current provider: %s\n", aiService.GetCurrentProvider()))
+			formattedOutput.WriteString(fmt.Sprintf("Current model: %s\n", aiService.GetCurrentModel()))
+
+			fmt.Println(formattedOutput.String())
 		},
 	}
 
