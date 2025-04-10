@@ -38,6 +38,14 @@ func createRootCommand(cfg *config.Config, aiService *ai.Service) *cobra.Command
 	// Add log analysis command
 	rootCmd.AddCommand(createAnalyzeLogsCmd(cfg, aiService))
 
+	// Add configuration/provider management commands
+	rootCmd.AddCommand(createChatCmd(cfg, aiService))
+	rootCmd.AddCommand(createSetModelCmd(cfg, aiService))
+	rootCmd.AddCommand(createListModelsCmd(cfg, aiService))
+	rootCmd.AddCommand(createSetProviderCmd(cfg, aiService))
+	rootCmd.AddCommand(createListProvidersCmd(cfg, aiService))
+	rootCmd.AddCommand(createSetApiKeyCmd(cfg, aiService))
+
 	return rootCmd
 }
 

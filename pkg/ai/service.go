@@ -32,7 +32,9 @@ func NewService(cfg *config.Config) *Service {
 		provider = providers.NewOllamaProvider(cfg.OllamaURL, cfg.DefaultModel)
 		// Also update config to reflect the fallback
 		cfg.AIProvider = "ollama"
-		cfg.SaveConfig()
+		if saveErr := cfg.SaveConfig(); saveErr != nil {
+			fmt.Printf("Warning: Failed to save fallback provider configuration: %v\n", saveErr)
+		}
 	}
 
 	return &Service{

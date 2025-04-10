@@ -2,6 +2,7 @@ package config
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -136,7 +137,10 @@ func LoadConfig() *Config {
 	}
 
 	// Save the initial config
-	config.SaveConfig()
+	if err := config.SaveConfig(); err != nil {
+		// Log the error but continue, as this is not critical
+		fmt.Printf("Warning: Failed to save initial configuration: %v\n", err)
+	}
 
 	return config
 }
@@ -170,11 +174,15 @@ func (c *Config) GetProviderURL(provider string) string {
 // UpdateProvider updates the current AI provider
 func (c *Config) UpdateProvider(provider string) {
 	c.AIProvider = provider
-	c.SaveConfig()
+	if err := c.SaveConfig(); err != nil {
+		fmt.Printf("Warning: Failed to save provider configuration: %v\n", err)
+	}
 }
 
 // UpdateModel updates the default model for the current provider
 func (c *Config) UpdateModel(model string) {
 	c.DefaultModel = model
-	c.SaveConfig()
+	if err := c.SaveConfig(); err != nil {
+		fmt.Printf("Warning: Failed to save model configuration: %v\n", err)
+	}
 }

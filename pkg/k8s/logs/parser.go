@@ -13,22 +13,8 @@ var (
 	// Regex to find common error messages
 	errorRegex = regexp.MustCompile(`(?i)(error|exception|failed|failure|fatal|panic)`)
 
-	// Regex to find stack traces
-	stackTraceRegex = regexp.MustCompile(`at\s+[\w\.$]+\([\w\.]+:\d+\)`)
-
 	// Regex to find common warning patterns
 	warningRegex = regexp.MustCompile(`(?i)(warning|warn|deprecated)`)
-
-	// Common timestamp formats
-	timestampFormats = []string{
-		time.RFC3339,
-		time.RFC3339Nano,
-		"2006-01-02T15:04:05",
-		"2006-01-02 15:04:05",
-		"2006/01/02 15:04:05",
-		"Jan 2 15:04:05",
-		"Jan 02 15:04:05",
-	}
 )
 
 // LogSummary provides a summary of analyzed logs
