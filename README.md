@@ -32,14 +32,13 @@ If you prefer to install manually:
 3. Make it executable: `chmod +x kubectl-ai`
 4. Move it to a directory in your PATH, e.g., `mv kubectl-ai /usr/local/bin/`
 
-### Docker
+### Testing plugin installation locally
 
-You can also run Kube-AI as a Docker container:
+ `kubectl krew install --manifest=ai.yaml --archive=foo.tar.gz`
 
-```bash
-docker pull dalekurt/kube-ai:latest
-docker run --rm -it dalekurt/kube-ai:latest version
-```
+### Generate sha256
+
+ `shasum -a 256 releases/download/<VERSION>/*.tar.gz`
 
 ## Usage
 
@@ -348,4 +347,18 @@ If you encounter any issues or have questions, please file an issue on the [GitH
 
 ## Security Note
 
-Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information. 
+Kube-AI stores API keys in the configuration file. In a production environment, you may want to implement more secure key storage methods or use environment variables for sensitive information.
+
+## Security
+
+### Supply Chain Security
+
+This project implements [SLSA Level 3](https://slsa.dev) supply chain security using the SLSA GitHub Actions workflow. 
+This provides the following security guarantees:
+
+- **Build Provenance**: Cryptographic verification of how and where the software was built
+- **Source Integrity**: Verification that the source code hasn't been tampered with
+- **Build Integrity**: Protection against tampering during the build process
+- **Common Vulnerabilities**: Automated scanning for known vulnerabilities
+
+When downloading releases, you can verify their SLSA provenance to ensure they were built securely through our GitHub Actions workflows. 
