@@ -7,7 +7,9 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -485,14 +487,19 @@ func createAnalyzeLogsCmd(cfg *config.Config, aiService *ai.Service) *cobra.Comm
 	var previous bool
 	var errorsOnly bool
 	var outputFormat string
-	var showLogs bool
-	var maxLogs int
+	var showLogs bool = true // Default to showing logs
+	var maxLogs int = 20     // Default to 20 logs
+	var tailLiveLogs bool    // New flag for live log tailing
 
 	cmd := &cobra.Command{
 		Use:   "analyze-logs [resource-type] [resource-name]",
 		Short: "Analyze logs from a Kubernetes resource using AI",
 		Long: `Analyze logs from a Kubernetes resource (pod, deployment, etc.) and provide 
-AI-powered troubleshooting insights, including potential issues and solutions.`,
+AI-powered troubleshooting insights, including potential issues and solutions.
+
+By default, the command will display the first 20 log entries being analyzed.
+Use --show-logs=false to hide logs or --max-logs to change the number of logs shown.
+Use --tail to continuously stream logs in real-time instead of analyzing a fixed set.`,
 		Args: cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			// Extract arguments
@@ -527,11 +534,62 @@ AI-powered troubleshooting insights, including potential issues and solutions.`,
 				TailLines:    tl,
 				SinceSeconds: ss,
 				Previous:     previous,
-				Follow:       false,
+				Follow:       tailLiveLogs,
 			}
 
 			// Collect logs
 			fmt.Printf("Collecting logs from %s/%s in namespace %s...\n", resourceType, resourceName, namespace)
+
+			// Handle live tailing mode differently
+			if tailLiveLogs {
+				fmt.Println("Streaming logs in real-time (press Ctrl+C to stop)...")
+
+				// Create context that can be canceled on interrupt
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
+
+				// Setup signal handling for graceful exit
+				interruptChan := make(chan os.Signal, 1)
+				signal.Notify(interruptChan, os.Interrupt, syscall.SIGTERM)
+
+				// Start a goroutine that will cancel the context when interrupted
+				go func() {
+					<-interruptChan
+					fmt.Println("\nInterrupted, stopping log stream...")
+					cancel()
+				}()
+
+				// Stream logs in real-time
+				logChan := make(chan logs.LogEntry)
+				errChan := make(chan error)
+
+				go func() {
+					err := collector.StreamLogs(ctx, options, logChan, errChan)
+					if err != nil {
+						fmt.Printf("Error streaming logs: %v\n", err)
+					}
+				}()
+
+				// Process streamed logs
+				for {
+					select {
+					case entry, ok := <-logChan:
+						if !ok {
+							return
+						}
+						displayLogEntry(entry)
+					case err, ok := <-errChan:
+						if !ok {
+							return
+						}
+						fmt.Printf("Error: %v\n", err)
+					case <-ctx.Done():
+						return
+					}
+				}
+			}
+
+			// Normal log collection and analysis mode
 			logEntries, err := collector.GetResourceLogs(context.Background(), options)
 			if err != nil {
 				log.Fatalf("Error collecting logs: %v", err)
@@ -554,35 +612,7 @@ AI-powered troubleshooting insights, including potential issues and solutions.`,
 						break
 					}
 
-					// Format timestamp for readability
-					timeStr := entry.Timestamp.Format("2006-01-02 15:04:05")
-
-					// Add colors based on log level
-					levelColor := ""
-					resetColor := "\033[0m"
-
-					switch entry.LogLevel {
-					case "ERROR", "FATAL":
-						levelColor = "\033[31m" // Red
-					case "WARN", "WARNING":
-						levelColor = "\033[33m" // Yellow
-					case "INFO":
-						levelColor = "\033[32m" // Green
-					}
-
-					// Print log entry with container name if available
-					containerInfo := ""
-					if entry.ContainerName != "" {
-						containerInfo = fmt.Sprintf(" [%s]", entry.ContainerName)
-					}
-
-					fmt.Printf("%s [%s%s%s]%s %s\n",
-						timeStr,
-						levelColor,
-						entry.LogLevel,
-						resetColor,
-						containerInfo,
-						entry.Content)
+					displayLogEntry(entry)
 				}
 
 				if len(logEntries) > logCount {
@@ -628,10 +658,44 @@ AI-powered troubleshooting insights, including potential issues and solutions.`,
 	cmd.Flags().BoolVarP(&previous, "previous", "p", false, "Include logs from previously terminated containers")
 	cmd.Flags().BoolVarP(&errorsOnly, "errors-only", "e", false, "Analyze only error logs")
 	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "Output format (text or json)")
-	cmd.Flags().BoolVarP(&showLogs, "show-logs", "l", false, "Display the log entries being analyzed")
-	cmd.Flags().IntVar(&maxLogs, "max-logs", 50, "Maximum number of log entries to display when using --show-logs")
+	cmd.Flags().BoolVar(&showLogs, "show-logs", true, "Display the log entries being analyzed (default true)")
+	cmd.Flags().IntVar(&maxLogs, "max-logs", 20, "Maximum number of log entries to display (default 20)")
+	cmd.Flags().BoolVar(&tailLiveLogs, "live", false, "Stream logs in real-time instead of analyzing a fixed set")
 
 	return cmd
+}
+
+// displayLogEntry formats and displays a single log entry with color coding
+func displayLogEntry(entry logs.LogEntry) {
+	// Format timestamp for readability
+	timeStr := entry.Timestamp.Format("2006-01-02 15:04:05")
+
+	// Add colors based on log level
+	levelColor := ""
+	resetColor := "\033[0m"
+
+	switch entry.LogLevel {
+	case "ERROR", "FATAL":
+		levelColor = "\033[31m" // Red
+	case "WARN", "WARNING":
+		levelColor = "\033[33m" // Yellow
+	case "INFO":
+		levelColor = "\033[32m" // Green
+	}
+
+	// Print log entry with container name if available
+	containerInfo := ""
+	if entry.ContainerName != "" {
+		containerInfo = fmt.Sprintf(" [%s]", entry.ContainerName)
+	}
+
+	fmt.Printf("%s [%s%s%s]%s %s\n",
+		timeStr,
+		levelColor,
+		entry.LogLevel,
+		resetColor,
+		containerInfo,
+		entry.Content)
 }
 
 // displayJSONResults outputs analysis results in JSON format

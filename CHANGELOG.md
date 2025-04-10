@@ -8,8 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- Add log display capability to `analyze-logs` command with `--show-logs` flag
-- Add `--max-logs` option to control number of displayed log entries
+- Display logs by default in `analyze-logs` command, showing 20 entries
+- Add `--live` flag to `analyze-logs` command to stream logs in real-time
+- Add support for streaming logs from pods, deployments, and statefulsets
+
+### Changed
+- Make log display enabled by default with `--show-logs=true`
+- Reduce default number of displayed logs from 50 to 20 for better readability
+- Improve log display formatting with color coding and timestamp formatting
+- Extract log display logic into dedicated `displayLogEntry` function
 
 ## [0.1.8] - 2025-04-10
 
