@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Add log display capability to `analyze-logs` command with `--show-logs` flag
+- Add `--max-logs` option to control number of displayed log entries
+
 ## [0.1.8] - 2025-04-10
 
 ### Added
