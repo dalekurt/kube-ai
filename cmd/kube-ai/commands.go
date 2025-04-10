@@ -485,6 +485,8 @@ func createAnalyzeLogsCmd(cfg *config.Config, aiService *ai.Service) *cobra.Comm
 	var previous bool
 	var errorsOnly bool
 	var outputFormat string
+	var showLogs bool
+	var maxLogs int
 
 	cmd := &cobra.Command{
 		Use:   "analyze-logs [resource-type] [resource-name]",
@@ -537,6 +539,58 @@ AI-powered troubleshooting insights, including potential issues and solutions.`,
 
 			fmt.Printf("Collected %d log entries\n", len(logEntries))
 
+			// Display logs if requested
+			if showLogs {
+				logCount := len(logEntries)
+				if maxLogs > 0 && maxLogs < logCount {
+					logCount = maxLogs
+				}
+
+				fmt.Printf("\n====== LOG ENTRIES ======\n")
+				fmt.Printf("Showing %d of %d log entries:\n\n", logCount, len(logEntries))
+
+				for i, entry := range logEntries {
+					if i >= logCount {
+						break
+					}
+
+					// Format timestamp for readability
+					timeStr := entry.Timestamp.Format("2006-01-02 15:04:05")
+
+					// Add colors based on log level
+					levelColor := ""
+					resetColor := "\033[0m"
+
+					switch entry.LogLevel {
+					case "ERROR", "FATAL":
+						levelColor = "\033[31m" // Red
+					case "WARN", "WARNING":
+						levelColor = "\033[33m" // Yellow
+					case "INFO":
+						levelColor = "\033[32m" // Green
+					}
+
+					// Print log entry with container name if available
+					containerInfo := ""
+					if entry.ContainerName != "" {
+						containerInfo = fmt.Sprintf(" [%s]", entry.ContainerName)
+					}
+
+					fmt.Printf("%s [%s%s%s]%s %s\n",
+						timeStr,
+						levelColor,
+						entry.LogLevel,
+						resetColor,
+						containerInfo,
+						entry.Content)
+				}
+
+				if len(logEntries) > logCount {
+					fmt.Printf("\n... and %d more log entries\n", len(logEntries)-logCount)
+				}
+				fmt.Println()
+			}
+
 			// Parse and analyze logs
 			fmt.Println("Analyzing logs...")
 			logSummary := logs.ParseLogs(logEntries)
@@ -574,6 +628,8 @@ AI-powered troubleshooting insights, including potential issues and solutions.`,
 	cmd.Flags().BoolVarP(&previous, "previous", "p", false, "Include logs from previously terminated containers")
 	cmd.Flags().BoolVarP(&errorsOnly, "errors-only", "e", false, "Analyze only error logs")
 	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "Output format (text or json)")
+	cmd.Flags().BoolVarP(&showLogs, "show-logs", "l", false, "Display the log entries being analyzed")
+	cmd.Flags().IntVar(&maxLogs, "max-logs", 50, "Maximum number of log entries to display when using --show-logs")
 
 	return cmd
 }
