@@ -156,6 +156,11 @@ jobs:
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
+          # Checkout the default branch (main or master)
+          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+          # Get the latest changes
+          git pull
+          # Apply the changes to ai.yaml and CHANGELOG.md
           git add ai.yaml CHANGELOG.md
           git commit -m "Update ai.yaml and CHANGELOG.md for v$VERSION [skip ci]" || echo "No changes to commit"
           git push
