@@ -116,7 +116,7 @@ echo "Creating GitHub release..."
 gh release create "$TAG" \
   --title "Kube-AI $VERSION" \
   --notes-file "$RELEASE_NOTES_FILE" \
-  --draft \
+  --draft false \
   bin/*
 
 echo "Building and pushing Docker image..."
