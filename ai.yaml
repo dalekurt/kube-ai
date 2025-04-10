@@ -10,7 +10,7 @@ spec:
           os: linux
           arch: amd64
       uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Linux_x86_64.tar.gz
-      sha256: "{{ sha256 will be generated during release }}"
+      sha256: "0ae5d1f67fcfbdd5dd1f4fb462de99ad0b0b70b5258d3a1b1e675694fbcf7d01"
       files:
         - from: "kube-ai"
           to: "."
@@ -22,7 +22,7 @@ spec:
           os: linux
           arch: arm64
       uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Linux_arm64.tar.gz
-      sha256: "{{ sha256 will be generated during release }}"
+      sha256: "d9386c15517d3da825a8de16ed665288736e16cad386e779b898a5e9bfee8ab0"
       files:
         - from: "kube-ai"
           to: "."
@@ -34,7 +34,7 @@ spec:
           os: darwin
           arch: amd64
       uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Darwin_x86_64.tar.gz
-      sha256: "{{ sha256 will be generated during release }}"
+      sha256: "2d3616e61257c98593c3afe17a5cb20c42a6f90b6f37fbabefb846bd3aa84de9"
       files:
         - from: "kube-ai"
           to: "."
@@ -46,7 +46,7 @@ spec:
           os: darwin
           arch: arm64
       uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Darwin_arm64.tar.gz
-      sha256: "{{ sha256 will be generated during release }}"
+      sha256: "69fda482fbe0bb84ff1bb10df28469a598dcc830226864ff70596a663a4326f8"
       files:
         - from: "kube-ai"
           to: "."
@@ -58,7 +58,7 @@ spec:
           os: windows
           arch: amd64
       uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Windows_x86_64.zip
-      sha256: "{{ sha256 will be generated during release }}"
+      sha256: "9839bc2fe60b285553fa90f8e1b4cdc423cf12dd1d89f30a471ff78e2c1bc7c4"
       files:
         - from: "kube-ai.exe"
           to: "."
