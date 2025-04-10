@@ -1,8 +1,9 @@
 # Kube-AI
-
+<img width="1840" alt="Screenshot 2025-04-10 at 11 27 44 AM" src="https://github.com/user-attachments/assets/0102523a-d1c4-4c41-85c4-5fc91fd48c50" />
 Kube-AI is an AI-powered tool for Kubernetes that helps automate and enhance Kubernetes operations, providing intelligent assistance for cluster management and application deployment.
 
 ## Features
+
 
 - **Resource Analysis**: Analyze Kubernetes resources for best practices and potential issues
 - **Resource Optimization**: Get AI-powered recommendations for optimizing CPU and memory usage
