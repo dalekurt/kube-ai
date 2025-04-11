@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2025-04-10
+
+### Added
+- feat: Implement seamless kubectl flag support across all commands (a4ae47f)
+- docs: Update CHANGELOG.md with log display feature (7b5cd35)
+
+
+### Changed
+- No significant changes in this release
+
+### Fixed
+- No fixes in this release
+
+### Other
+- Feature: Enhance log display with defaults and live streaming (ab00c71)
+- Feature: Add log display option to analyze-logs command (1925a39)
+- Fix: Clean up duplicate 0.1.8 entries in CHANGELOG.md (7648956)
+- Update README.md (f4311ee)
+- Enhance list-models command with current provider and model info (d470e12)
+- Fix: Optimize version command output by removing duplication and using version package (0242591)
+- Update ai.yaml and CHANGELOG.md for v0.1.8 [skip ci] (d39b055)
+
 ### Added
 - Display logs by default in `analyze-logs` command, showing 20 entries
 - Add `--live` flag to `analyze-logs` command to stream logs in real-time
