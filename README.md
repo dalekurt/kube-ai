@@ -12,6 +12,8 @@ Kube-AI is an AI-powered tool for Kubernetes that helps automate and enhance Kub
 - **Error Explanation**: Get AI-powered explanations and solutions for Kubernetes errors
 - **Log Analysis**: Analyze Kubernetes logs to identify patterns, issues, and solutions
 - **Multi-Provider Support**: Works with multiple AI providers (Ollama, OpenAI, Anthropic, Gemini, AnythingLLM)
+- **AI Personas**: Customize AI behavior with different personas for various use cases
+- **Kubectl Integration**: Seamlessly supports standard kubectl flags for a native experience
 - **Customizable**: Switch between providers and models based on your needs
 
 ## Installation
@@ -44,6 +46,29 @@ If you prefer to install manually:
 ## Usage
 
 Once installed, you can use kube-ai with the following commands:
+
+### Standard kubectl flags
+
+Kube-AI seamlessly supports all standard kubectl flags including:
+
+```bash
+# Use a specific namespace
+kubectl ai analyze deployment my-app -n production
+
+# Use a specific context
+kubectl ai analyze deployment my-app --context=production-cluster
+
+# Use a specific kubeconfig file
+kubectl ai analyze deployment my-app --kubeconfig=/path/to/kubeconfig
+
+# Combine multiple flags
+kubectl ai analyze-logs pod my-app-pod -n production --context=production-cluster
+
+# All standard kubectl flags work with every kube-ai command
+kubectl ai analyze-logs deployment my-app --all-namespaces
+```
+
+These flags work just like they do with regular kubectl commands, making the experience completely seamless for kubectl users.
 
 ### Resource Analysis
 
@@ -102,6 +127,31 @@ kubectl ai explain "Failed to pull image: ErrImagePull"
 kubectl get pods 2>&1 | kubectl ai explain
 ```
 
+### AI Personas
+
+Customize how the AI responds with different personas to suit your needs:
+
+```bash
+# List available personas
+kubectl ai persona list
+
+# Switch to a different persona
+kubectl ai persona use concise
+
+# Add a custom persona
+kubectl ai persona add beginner "Beginner-friendly explanations" "You are a friendly Kubernetes tutor for beginners."
+
+# Remove a custom persona
+kubectl ai persona remove beginner
+```
+
+Available personas:
+- **kubernetes-expert**: Deep technical expertise with detailed responses
+- **devops-engineer**: DevOps-focused approach with CI/CD and automation expertise
+- **teacher**: Simplified explanations with examples for learning
+- **security-specialist**: Focus on security best practices and vulnerability mitigation
+- **concise**: Brief, to-the-point responses without extra explanation
+
 ### Log Analysis
 
 Analyze Kubernetes logs with AI to identify issues and get troubleshooting recommendations:
@@ -121,7 +171,7 @@ kubectl ai analyze-logs deployment my-app --output json > analysis.json
 ```
 
 Available options:
-- `--namespace, -n`: Namespace of the resource (default: "default")
+- Standard kubectl flags: `-n/--namespace`, `--context`, `--kubeconfig`, etc.
 - `--container, -c`: Container name for pods with multiple containers
 - `--tail, -t`: Number of lines to include from the end of logs (default: 1000)
 - `--since, -s`: Only return logs newer than a duration in seconds (default: 3600)
@@ -221,6 +271,7 @@ You can configure environment variables to set defaults:
 - `OPENAI_DEFAULT_MODEL`: Default model for OpenAI (default: gpt-3.5-turbo)
 - `ANTHROPIC_DEFAULT_MODEL`: Default model for Anthropic (default: claude-3-haiku-20240307)
 - `GEMINI_DEFAULT_MODEL`: Default model for Gemini (default: gemini-1.5-pro)
+- `KUBE_AI_PERSONA`: Default AI persona to use (default: kubernetes-expert)
 
 ## Project Structure
 

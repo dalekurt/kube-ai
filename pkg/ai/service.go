@@ -123,14 +123,22 @@ func (s *Service) GetProvider() providers.Provider {
 func (s *Service) AnalyzeDeployment(deploymentYAML string) (string, error) {
 	prompt := fmt.Sprintf("Analyze this Kubernetes deployment and provide insights and recommendations:\n\n%s", deploymentYAML)
 
-	return s.provider.GenerateResponse(prompt, 0.7)
+	// Get current persona system prompt for context
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.7)
 }
 
 // OptimizeResources suggests optimizations for resource usage
 func (s *Service) OptimizeResources(resourcesYAML string) (string, error) {
 	prompt := fmt.Sprintf("Suggest optimizations for these Kubernetes resource definitions to improve efficiency and performance:\n\n%s", resourcesYAML)
 
-	return s.provider.GenerateResponse(prompt, 0.7)
+	// Get current persona system prompt for context
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.7)
 }
 
 // SuggestScalingStrategy suggests scaling strategies
@@ -138,7 +146,11 @@ func (s *Service) SuggestScalingStrategy(metricsData, currentConfig string) (str
 	prompt := fmt.Sprintf("Based on the following metrics and current configuration, suggest an optimal scaling strategy for this Kubernetes workload:\n\nMetrics:\n%s\n\nCurrent Configuration:\n%s",
 		metricsData, currentConfig)
 
-	return s.provider.GenerateResponse(prompt, 0.7)
+	// Get current persona system prompt for context
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.7)
 }
 
 // GenerateManifest generates a Kubernetes manifest
@@ -146,7 +158,11 @@ func (s *Service) GenerateManifest(description string) (string, error) {
 	prompt := fmt.Sprintf("Generate a valid Kubernetes manifest for the following description:\n\n%s\n\nPlease provide a complete YAML manifest.",
 		description)
 
-	return s.provider.GenerateResponse(prompt, 0.7)
+	// Get current persona system prompt for context
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.7)
 }
 
 // ExplainError explains Kubernetes errors
@@ -154,12 +170,18 @@ func (s *Service) ExplainError(errorMessage string) (string, error) {
 	prompt := fmt.Sprintf("Explain the following Kubernetes error in simple terms and suggest how to fix it:\n\n%s",
 		errorMessage)
 
-	return s.provider.GenerateResponse(prompt, 0.7)
+	// Get current persona system prompt for context
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.7)
 }
 
 // Chat allows general conversation about Kubernetes
 func (s *Service) Chat(userMessage string) (string, error) {
-	systemPrompt := "You are a helpful Kubernetes expert assistant. Provide accurate, concise information about Kubernetes concepts, resources, and best practices."
+	// Get the current persona from config
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
 
 	return s.provider.ChatCompletion(systemPrompt, userMessage, 0.7)
 }
@@ -197,11 +219,27 @@ func (s *Service) GetCurrentModel() string {
 	return s.provider.GetModelName()
 }
 
+// GetCurrentPersona returns the name of the currently active persona
+func (s *Service) GetCurrentPersona() string {
+	return s.config.ActivePersona
+}
+
 // Query sends a single query to the AI provider and returns the response
 func (s *Service) Query(ctx context.Context, prompt string) (string, error) {
-	response, err := s.provider.GenerateCompletion(ctx, prompt)
-	if err != nil {
-		return "", fmt.Errorf("error querying AI provider: %w", err)
+	// Use the current persona's system prompt
+	persona := s.config.GetCurrentPersona()
+	systemPrompt := persona.SystemPrompt
+
+	return s.provider.ChatCompletion(systemPrompt, prompt, 0.3)
+}
+
+// ChatCompletion sends a general chat request to the AI provider
+func (s *Service) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
+	// If no system prompt provided, use the current persona's system prompt
+	if systemPrompt == "" {
+		persona := s.config.GetCurrentPersona()
+		systemPrompt = persona.SystemPrompt
 	}
-	return response, nil
+
+	return s.provider.ChatCompletion(systemPrompt, userMessage, temperature)
 }

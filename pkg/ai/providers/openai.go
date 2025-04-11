@@ -70,11 +70,11 @@ func NewOpenAIProvider(apiKey string, modelName string) *OpenAIProvider {
 // GenerateResponse generates a response for a prompt
 func (p *OpenAIProvider) GenerateResponse(prompt string, temperature float64) (string, error) {
 	// For OpenAI, we'll just use the chat endpoint with a user message
-	return p.ChatCompletion("", prompt, temperature)
+	return p.ChatCompletion("", prompt, float32(temperature))
 }
 
 // ChatCompletion generates a response from a conversation
-func (p *OpenAIProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error) {
+func (p *OpenAIProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
 	if p.config.APIKey == "" {
 		return "", fmt.Errorf("OpenAI API key is required")
 	}
@@ -94,7 +94,7 @@ func (p *OpenAIProvider) ChatCompletion(systemPrompt string, userMessage string,
 	request := OpenAIChatRequest{
 		Model:       p.config.ModelName,
 		Messages:    messages,
-		Temperature: temperature,
+		Temperature: float32ToFloat64(temperature),
 	}
 
 	requestBody, err := json.Marshal(request)
@@ -271,4 +271,8 @@ func (p *OpenAIProvider) GenerateCompletion(ctx context.Context, prompt string) 
 
 	// Return the completion text
 	return response.Choices[0].Message.Content, nil
+}
+
+func float32ToFloat64(f float32) float64 {
+	return float64(f)
 }

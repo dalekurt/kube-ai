@@ -67,11 +67,11 @@ func NewAnthropicProvider(apiKey string, modelName string) *AnthropicProvider {
 // GenerateResponse generates a response for a prompt
 func (p *AnthropicProvider) GenerateResponse(prompt string, temperature float64) (string, error) {
 	// For Anthropic, we'll use the messages API with a user message
-	return p.ChatCompletion("", prompt, temperature)
+	return p.ChatCompletion("", prompt, float32(temperature))
 }
 
 // ChatCompletion generates a response from a conversation
-func (p *AnthropicProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error) {
+func (p *AnthropicProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
 	if p.config.APIKey == "" {
 		return "", fmt.Errorf("Anthropic API key is required")
 	}
@@ -92,7 +92,7 @@ func (p *AnthropicProvider) ChatCompletion(systemPrompt string, userMessage stri
 		Model:       p.config.ModelName,
 		MaxTokens:   4096,
 		Messages:    messages,
-		Temperature: temperature,
+		Temperature: float64(temperature),
 	}
 
 	requestBody, err := json.Marshal(request)

@@ -70,57 +70,12 @@ func NewGeminiProvider(apiKey string, modelName string) *GeminiProvider {
 
 // GenerateResponse generates a response for a prompt
 func (p *GeminiProvider) GenerateResponse(prompt string, temperature float64) (string, error) {
-	if p.config.APIKey == "" {
-		return "", fmt.Errorf("Gemini API key is required")
-	}
-
-	content := GeminiContent{
-		Parts: []struct {
-			Text string `json:"text"`
-		}{
-			{Text: prompt},
-		},
-	}
-
-	request := GeminiRequest{
-		Contents: []GeminiContent{content},
-		GenerationConfig: GeminiGenerationConfig{
-			Temperature:     temperature,
-			MaxOutputTokens: 4096,
-		},
-	}
-
-	requestBody, err := json.Marshal(request)
-	if err != nil {
-		return "", fmt.Errorf("error marshaling request: %w", err)
-	}
-
-	url := fmt.Sprintf("%s/models/%s:generateContent?key=%s", p.config.BaseURL, p.config.ModelName, p.config.APIKey)
-	resp, err := p.client.Post(url, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-		return "", fmt.Errorf("error making request to Gemini: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		bodyBytes, _ := io.ReadAll(resp.Body)
-		return "", fmt.Errorf("error from Gemini API: status code %d, body: %s", resp.StatusCode, string(bodyBytes))
-	}
-
-	var response GeminiResponse
-	if err := json.NewDecoder(resp.Body).Decode(&response); err != nil {
-		return "", fmt.Errorf("error decoding response: %w", err)
-	}
-
-	if len(response.Candidates) == 0 || len(response.Candidates[0].Content.Parts) == 0 {
-		return "", fmt.Errorf("no response text returned")
-	}
-
-	return response.Candidates[0].Content.Parts[0].Text, nil
+	// For Gemini, use the ChatCompletion method with an empty system prompt
+	return p.ChatCompletion("", prompt, float32(temperature))
 }
 
 // ChatCompletion generates a response from a conversation
-func (p *GeminiProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error) {
+func (p *GeminiProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
 	if p.config.APIKey == "" {
 		return "", fmt.Errorf("Gemini API key is required")
 	}
@@ -145,7 +100,7 @@ func (p *GeminiProvider) ChatCompletion(systemPrompt string, userMessage string,
 	request := GeminiRequest{
 		Contents: []GeminiContent{content},
 		GenerationConfig: GeminiGenerationConfig{
-			Temperature:     temperature,
+			Temperature:     float64(temperature),
 			MaxOutputTokens: 4096,
 		},
 	}
@@ -213,7 +168,7 @@ func (p *GeminiProvider) RequiresAPIKey() bool {
 
 // GenerateCompletion sends a prompt to Gemini and returns the response
 func (p *GeminiProvider) GenerateCompletion(ctx context.Context, prompt string) (string, error) {
-	// For Gemini, we'll use a Kubernetes-specific system prompt
+	// For Gemini, we'll provide a specific Kubernetes-focused system prompt
 	systemPrompt := "You are a Kubernetes expert assistant. Provide concise, accurate information about Kubernetes concepts, troubleshooting, and best practices."
 
 	return p.ChatCompletion(systemPrompt, prompt, 0.7)

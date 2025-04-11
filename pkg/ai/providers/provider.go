@@ -10,7 +10,7 @@ type Provider interface {
 	GenerateResponse(prompt string, temperature float64) (string, error)
 
 	// ChatCompletion generates a response from a conversation
-	ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error)
+	ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error)
 
 	// ListModels returns a list of available models
 	ListModels() (string, error)

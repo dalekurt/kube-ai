@@ -125,8 +125,8 @@ func (p *OllamaProvider) GenerateResponse(prompt string, temperature float64) (s
 	return fullResponse.String(), nil
 }
 
-// ChatCompletion generates a response from a conversation
-func (p *OllamaProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error) {
+// ChatCompletion sends a chat message to the Ollama API
+func (p *OllamaProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
 	messages := []OllamaMessage{
 		{Role: "system", Content: systemPrompt},
 		{Role: "user", Content: userMessage},
@@ -137,7 +137,7 @@ func (p *OllamaProvider) ChatCompletion(systemPrompt string, userMessage string,
 		Messages: messages,
 		Stream:   false,
 		Options: OllamaOptions{
-			Temperature: temperature,
+			Temperature: float64(temperature),
 		},
 	}
 

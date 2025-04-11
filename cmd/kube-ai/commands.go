@@ -28,7 +28,17 @@ func createRootCommand(cfg *config.Config, aiService *ai.Service) *cobra.Command
 		Use:   "kube-ai",
 		Short: "AI-powered Kubernetes assistant",
 		Long:  `Kube-AI is an AI-powered assistant for Kubernetes, providing intelligent assistance for cluster management.`,
+		PersistentPreRun: func(cmd *cobra.Command, args []string) {
+			// Update kubeconfig path in cfg if set via flag
+			kubeconfig, _ := cmd.Flags().GetString("kubeconfig")
+			if kubeconfig != "" {
+				cfg.KubeConfigPath = kubeconfig
+			}
+		},
 	}
+
+	// Add standard kubectl flags to all commands
+	k8s.AddKubectlFlags(rootCmd)
 
 	// Add subcommands
 	rootCmd.AddCommand(createAnalyzeCmd(cfg, aiService))
@@ -49,13 +59,14 @@ func createRootCommand(cfg *config.Config, aiService *ai.Service) *cobra.Command
 	rootCmd.AddCommand(createListProvidersCmd(cfg, aiService))
 	rootCmd.AddCommand(createSetApiKeyCmd(cfg, aiService))
 
+	// Add persona command
+	rootCmd.AddCommand(createPersonaCmd(cfg))
+
 	return rootCmd
 }
 
 // createAnalyzeCmd creates the analyze command
 func createAnalyzeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command {
-	var resourceName string
-	var namespace string
 	var filename string
 
 	cmd := &cobra.Command{
@@ -76,13 +87,16 @@ func createAnalyzeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 			} else if len(args) >= 2 {
 				// Get from kubernetes
 				resourceType := args[0]
-				resourceName = args[1]
+				resourceName := args[1]
 
-				// Initialize the Kubernetes client but don't use it yet in this example
-				_, err := k8s.NewClient(cfg.KubeConfigPath)
+				// Initialize the Kubernetes client with kubectl flags
+				client, err := k8s.NewClientFromFlags(cmd)
 				if err != nil {
 					log.Fatalf("Error creating Kubernetes client: %v", err)
 				}
+
+				// Get the namespace from the client (which respects kubectl flags)
+				namespace := client.GetNamespace()
 
 				// This is a simplified example - in a real implementation,
 				// you would need to get the YAML representation of the resource
@@ -101,7 +115,7 @@ func createAnalyzeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 		},
 	}
 
-	cmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Kubernetes namespace")
+	// Add command-specific flags (filename is not a standard kubectl flag)
 	cmd.Flags().StringVarP(&filename, "filename", "f", "", "YAML file to analyze")
 
 	return cmd
@@ -109,7 +123,6 @@ func createAnalyzeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 
 // createOptimizeCmd creates the optimize command
 func createOptimizeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command {
-	var namespace string
 	var filename string
 
 	cmd := &cobra.Command{
@@ -140,7 +153,7 @@ func createOptimizeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command
 		},
 	}
 
-	cmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Kubernetes namespace")
+	// Add command-specific flags
 	cmd.Flags().StringVarP(&filename, "filename", "f", "", "YAML file to optimize")
 
 	return cmd
@@ -148,8 +161,6 @@ func createOptimizeCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command
 
 // createScalingCmd creates the scaling command
 func createScalingCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command {
-	var resourceName string
-	var namespace string
 	var metricsFile string
 	var configFile string
 
@@ -158,6 +169,7 @@ func createScalingCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 		Short: "Suggest scaling strategies",
 		Long:  `Suggest optimal scaling strategies for Kubernetes workloads.`,
 		Run: func(cmd *cobra.Command, args []string) {
+			var resourceName string
 			var metricsData string
 			var configData string
 			var err error
@@ -183,6 +195,15 @@ func createScalingCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 				}
 				configData = string(data)
 			} else if resourceName != "" {
+				// Initialize the Kubernetes client with kubectl flags
+				client, err := k8s.NewClientFromFlags(cmd)
+				if err != nil {
+					log.Fatalf("Error creating Kubernetes client: %v", err)
+				}
+
+				// Get the namespace from the client (which respects kubectl flags)
+				namespace := client.GetNamespace()
+
 				// In a real implementation, you would get the current configuration from Kubernetes
 				configData = fmt.Sprintf("Resource: %s, Namespace: %s", resourceName, namespace)
 			} else {
@@ -198,9 +219,9 @@ func createScalingCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command 
 		},
 	}
 
-	cmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Kubernetes namespace")
-	cmd.Flags().StringVarP(&metricsFile, "metrics", "m", "", "File containing metrics data")
-	cmd.Flags().StringVarP(&configFile, "config", "c", "", "File containing current configuration")
+	// Add command-specific flags
+	cmd.Flags().StringVarP(&metricsFile, "metrics", "m", "", "Metrics data file")
+	cmd.Flags().StringVarP(&configFile, "config", "c", "", "Current configuration file")
 
 	return cmd
 }
@@ -478,9 +499,6 @@ func createSetApiKeyCmd(cfg *config.Config, aiService *ai.Service) *cobra.Comman
 
 // createAnalyzeLogsCmd creates the analyze-logs command
 func createAnalyzeLogsCmd(cfg *config.Config, aiService *ai.Service) *cobra.Command {
-	var namespace string
-	var resourceType string
-	var resourceName string
 	var container string
 	var tailLines int64
 	var sinceSeconds int64
@@ -503,11 +521,11 @@ Use --tail to continuously stream logs in real-time instead of analyzing a fixed
 		Args: cobra.MinimumNArgs(2),
 		Run: func(cmd *cobra.Command, args []string) {
 			// Extract arguments
-			resourceType = args[0]
-			resourceName = args[1]
+			resourceType := args[0]
+			resourceName := args[1]
 
-			// Create Kubernetes client
-			client, err := k8s.NewClient(cfg.KubeConfigPath)
+			// Create Kubernetes client with kubectl flags
+			client, err := k8s.NewClientFromFlags(cmd)
 			if err != nil {
 				log.Fatalf("Error creating Kubernetes client: %v", err)
 			}
@@ -525,6 +543,9 @@ Use --tail to continuously stream logs in real-time instead of analyzing a fixed
 			if sinceSeconds > 0 {
 				ss = &sinceSeconds
 			}
+
+			// Get namespace from client which respects kubectl flags
+			namespace := client.GetNamespace()
 
 			options := logs.LogOptions{
 				ResourceType: resourceType,
@@ -650,17 +671,16 @@ Use --tail to continuously stream logs in real-time instead of analyzing a fixed
 		},
 	}
 
-	// Add flags
-	cmd.Flags().StringVarP(&namespace, "namespace", "n", "default", "Namespace of the resource")
-	cmd.Flags().StringVarP(&container, "container", "c", "", "Container name (for pods with multiple containers)")
-	cmd.Flags().Int64VarP(&tailLines, "tail", "t", 1000, "Number of lines to include from the end of the logs")
+	// Add command-specific flags (not available in standard kubectl)
+	cmd.Flags().StringVarP(&container, "container", "c", "", "Container name for pods with multiple containers")
+	cmd.Flags().Int64VarP(&tailLines, "tail", "t", 1000, "Number of lines to include from the end of logs")
 	cmd.Flags().Int64VarP(&sinceSeconds, "since", "s", 3600, "Only return logs newer than a duration in seconds")
 	cmd.Flags().BoolVarP(&previous, "previous", "p", false, "Include logs from previously terminated containers")
 	cmd.Flags().BoolVarP(&errorsOnly, "errors-only", "e", false, "Analyze only error logs")
 	cmd.Flags().StringVarP(&outputFormat, "output", "o", "text", "Output format (text or json)")
-	cmd.Flags().BoolVar(&showLogs, "show-logs", true, "Display the log entries being analyzed (default true)")
-	cmd.Flags().IntVar(&maxLogs, "max-logs", 20, "Maximum number of log entries to display (default 20)")
-	cmd.Flags().BoolVar(&tailLiveLogs, "live", false, "Stream logs in real-time instead of analyzing a fixed set")
+	cmd.Flags().BoolVar(&showLogs, "show-logs", true, "Display log entries being analyzed")
+	cmd.Flags().IntVar(&maxLogs, "max-logs", 20, "Maximum number of logs to display")
+	cmd.Flags().BoolVar(&tailLiveLogs, "live", false, "Stream logs in real-time")
 
 	return cmd
 }
@@ -794,4 +814,104 @@ func createVersionCmd() *cobra.Command {
 	}
 
 	return cmd
+}
+
+// createPersonaCmd creates a command for managing AI personas
+func createPersonaCmd(cfg *config.Config) *cobra.Command {
+	personaCmd := &cobra.Command{
+		Use:   "persona",
+		Short: "Manage AI assistant personas",
+		Long:  "Manage different personalities for the AI assistant, affecting how it responds to queries",
+	}
+
+	// List available personas
+	listCmd := &cobra.Command{
+		Use:   "list",
+		Short: "List available personas",
+		Long:  "Display all available personas, including default and custom ones",
+		Run: func(cmd *cobra.Command, args []string) {
+			personas := cfg.ListPersonas()
+
+			fmt.Println("Available personas:")
+			fmt.Println("-------------------")
+
+			for name, persona := range personas {
+				activeMarker := " "
+				if name == cfg.ActivePersona {
+					activeMarker = "*"
+				}
+
+				fmt.Printf("[%s] %s: %s\n", activeMarker, name, persona.Description)
+			}
+
+			fmt.Println("\n* = currently active persona")
+		},
+	}
+
+	// Use a specific persona
+	useCmd := &cobra.Command{
+		Use:   "use [persona-name]",
+		Short: "Set the active persona",
+		Long:  "Change the active persona used by the AI assistant",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			personaName := args[0]
+
+			err := cfg.SetPersona(personaName)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return
+			}
+
+			fmt.Printf("Persona changed to: %s\n", personaName)
+		},
+	}
+
+	// Add a custom persona
+	addCmd := &cobra.Command{
+		Use:   "add [name] [description] [system-prompt]",
+		Short: "Add a custom persona",
+		Long:  "Create a new custom persona with a specific system prompt",
+		Args:  cobra.ExactArgs(3),
+		Run: func(cmd *cobra.Command, args []string) {
+			name := args[0]
+			description := args[1]
+			systemPrompt := args[2]
+
+			err := cfg.AddCustomPersona(name, description, systemPrompt)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return
+			}
+
+			fmt.Printf("Added new persona: %s\n", name)
+		},
+	}
+
+	// Remove a custom persona
+	removeCmd := &cobra.Command{
+		Use:   "remove [name]",
+		Short: "Remove a custom persona",
+		Long:  "Delete a custom persona (default personas cannot be removed)",
+		Args:  cobra.ExactArgs(1),
+		Run: func(cmd *cobra.Command, args []string) {
+			name := args[0]
+
+			err := cfg.RemoveCustomPersona(name)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+				return
+			}
+
+			fmt.Printf("Removed persona: %s\n", name)
+		},
+	}
+
+	// Add subcommands to persona command
+	personaCmd.AddCommand(listCmd)
+	personaCmd.AddCommand(useCmd)
+	personaCmd.AddCommand(addCmd)
+	personaCmd.AddCommand(removeCmd)
+
+	return personaCmd
 }

@@ -20,7 +20,7 @@ type AnythingLLMProvider struct {
 type AnythingLLMChatRequest struct {
 	Message      string  `json:"message"`
 	SystemPrompt string  `json:"systemPrompt,omitempty"`
-	Temperature  float64 `json:"temperature"`
+	Temperature  float32 `json:"temperature"`
 	Stream       bool    `json:"stream"`
 }
 
@@ -48,11 +48,11 @@ func NewAnythingLLMProvider(baseURL string, apiKey string) *AnythingLLMProvider 
 
 // GenerateResponse generates a response for a prompt
 func (p *AnythingLLMProvider) GenerateResponse(prompt string, temperature float64) (string, error) {
-	return p.ChatCompletion("", prompt, temperature)
+	return p.ChatCompletion("", prompt, float32(temperature))
 }
 
 // ChatCompletion generates a response from a conversation
-func (p *AnythingLLMProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float64) (string, error) {
+func (p *AnythingLLMProvider) ChatCompletion(systemPrompt string, userMessage string, temperature float32) (string, error) {
 	request := AnythingLLMChatRequest{
 		Message:     userMessage,
 		Temperature: temperature,
