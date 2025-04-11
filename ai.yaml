@@ -3,13 +3,13 @@ kind: Plugin
 metadata:
   name: ai
 spec:
-  version: "v0.1.8"
+  version: "v0.2.0"
   platforms:
     - selector:
         matchLabels:
           os: linux
           arch: amd64
-      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Linux_x86_64.tar.gz
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.2.0/kube-ai_Linux_x86_64.tar.gz
       sha256: "0ae5d1f67fcfbdd5dd1f4fb462de99ad0b0b70b5258d3a1b1e675694fbcf7d01"
       files:
         - from: "kube-ai"
@@ -21,8 +21,8 @@ spec:
         matchLabels:
           os: linux
           arch: arm64
-      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Linux_arm64.tar.gz
-      sha256: "d9386c15517d3da825a8de16ed665288736e16cad386e779b898a5e9bfee8ab0"
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.2.0/kube-ai_Linux_arm64.tar.gz
+      sha256: "b805722112aa95ee0e009eb40ac5bbdbc176ab85fbf409fd54162ed5304c7657"
       files:
         - from: "kube-ai"
           to: "."
@@ -33,8 +33,8 @@ spec:
         matchLabels:
           os: darwin
           arch: amd64
-      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Darwin_x86_64.tar.gz
-      sha256: "2d3616e61257c98593c3afe17a5cb20c42a6f90b6f37fbabefb846bd3aa84de9"
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.2.0/kube-ai_Darwin_x86_64.tar.gz
+      sha256: "b79be49f9951a2fe7bf7b1cfbfe3bdc24dca9ed17b49268b354bad52a2c50927"
       files:
         - from: "kube-ai"
           to: "."
@@ -45,8 +45,8 @@ spec:
         matchLabels:
           os: darwin
           arch: arm64
-      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Darwin_arm64.tar.gz
-      sha256: "69fda482fbe0bb84ff1bb10df28469a598dcc830226864ff70596a663a4326f8"
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.2.0/kube-ai_Darwin_arm64.tar.gz
+      sha256: "12f48a18094860643f56f4ac4c0fb3af8b70754de58464277e6133e34e845ae6"
       files:
         - from: "kube-ai"
           to: "."
@@ -57,8 +57,8 @@ spec:
         matchLabels:
           os: windows
           arch: amd64
-      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.1.8/kube-ai_Windows_x86_64.zip
-      sha256: "9839bc2fe60b285553fa90f8e1b4cdc423cf12dd1d89f30a471ff78e2c1bc7c4"
+      uri: https://github.com/dalekurt/kube-ai/releases/download/v0.2.0/kube-ai_Windows_x86_64.zip
+      sha256: "276d77076d710a9bd3e8c8b8c84b03665a522220be89dcac4f8e7b758d59b7b9"
       files:
         - from: "kube-ai.exe"
           to: "."
