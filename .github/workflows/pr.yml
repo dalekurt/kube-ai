@@ -15,7 +15,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.27'
         
     - name: Install Taskfile
       run: go install github.com/go-task/task/v3/cmd/task@latest
@@ -33,7 +33,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.27'
         
     - name: Install Taskfile
       run: go install github.com/go-task/task/v3/cmd/task@latest
@@ -51,7 +51,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: '1.24'
+        go-version: '1.27'
         
     - name: Install Taskfile
       run: go install github.com/go-task/task/v3/cmd/task@latest
