@@ -2,7 +2,7 @@ module kube-ai
 
 go 1.24.2
 
-require k8s.io/client-go v0.32.3
+require k8s.io/client-go v11.0.0+incompatible
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
